@@ -1,0 +1,557 @@
+---
+title: "IFCB-Cruise Data summary"
+author: "Kristie Rigby"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::pdf_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    theme: united
+    highlight: tango 
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Set the working directory to where your files are stored
+setwd('')
+```
+
+
+```{r, echo=T, results='hide', message=FALSE}
+#load packages
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(scales)
+library(hms)
+#library(kabelExtra)
+```
+
+```{r, echo=T, results='hide', message=FALSE}
+#load matlab data output files
+class2use <- read_csv("class2use.csv",col_names = 'class')
+biovolume <- read_csv("biovolume.csv",col_names = F)
+classcount <- read_csv("classcount.csv", col_names = F)
+filelist <- read_csv("filelist.csv", col_names = 'sample_name')
+date <- read_csv("date.csv", col_names = "sampling_date")
+ml_analyzed <- read_csv("ml_analyzed.csv",col_names = "ml_analyzed")
+# load manually curated files
+taxa_list <- read_tsv("taxa_list.txt") #ttaxa list to make the groups (change this file when you add more species)
+shark_col <- read_tsv("shark_col.txt") # reads in a list of all the columns needed for the shark database
+lat_long_oct <- read_tsv("ifcb_merged_oct_2022.txt") #reads in the latitude and longitude files
+lat_long_july <- read_tsv("ifcb_merged_july_2022.txt")
+lat_long_may <- read_tsv("ifcb_merged_svea_may_2022.txt")
+```
+
+
+```{r, echo=T, results='hide', message=FALSE}
+#merge the csv files into one data frame called df_counts
+colnames(classcount) <- paste("counts", class2use$class, sep="_") # assign species names from class2use to classcount
+colnames(biovolume) <- paste("biovolume", class2use$class, sep="_") # assign species names from class2use to biovolume
+df_counts <- bind_cols(filelist, ml_analyzed, date, classcount,biovolume) #combine the filelist with the ml_analayzed and classcount
+df_counts
+```
+
+```{r}
+# merging and cleaning lat long files
+lat_long <- bind_rows(lat_long_may, lat_long_july, lat_long_oct) %>% 
+  select(File, LATX, LONX) %>% 
+  mutate(File = gsub(".adc", "", File))
+```
+
+```{r, echo=T, results='hide', message=FALSE}
+#transforming the data set to a long format and adds a column with counts per litre 
+df_counts_long <- df_counts %>% pivot_longer(
+  cols = !c("sample_name", "ml_analyzed", "sampling_date"), # pivots all but these
+  names_sep = "_",
+  names_to = c("type", "species"), 
+  values_to = "value") %>% 
+  pivot_wider(names_from = type, values_from = value) %>% 
+  mutate("counts_per_liter" = counts/ml_analyzed*1000) %>% 
+  mutate("biovolume_per_liter" = biovolume/ml_analyzed*1000) %>% 
+  mutate("biovolume_mm3" = biovolume_per_liter/1000) %>% 
+  mutate(sampling_date = as.Date(sampling_date, origin = "1970-01-01") - 719529) %>% 
+  mutate("sampling_time" = paste0(
+    str_sub(sample_name, start = 11L, end = 12L), ":", 
+    str_sub(sample_name, start = 13L, end = 14L), ":",
+    str_sub(sample_name, start = 15L, end = 16L))) %>% 
+  mutate("datetime" = gsub("D", "", 
+                      gsub ("T", "", 
+                      gsub("_IFCB134", "" ,sample_name))))
+```
+
+```{r}
+#creates the number of taxa found in the sample (i.e 3 out of the 10 total)
+species_counts <- df_counts_long %>% 
+  filter(counts > 0) %>% 
+  group_by(sample_name) %>% 
+  count(sample_name) %>% 
+  transmute(n_species = n)
+```
+
+
+```{r}
+# makes a dataframe called df_count_taxa where it adds and assigning the group and HAB to the species (long format). Adds the columns for the carbon content, and the means
+df_count_taxa <- left_join(df_counts_long, taxa_list, by = "species") %>% 
+  left_join(lat_long, by = c("sample_name" = "File")) %>% 
+  left_join(species_counts, by  = "sample_name") %>% 
+  mutate(carbon_count = carbon_f1*biovolume^carbon_f2) %>% #calculating carbon divide this by the counts
+  mutate(classifiers_n = n_distinct(species)) %>%
+  mutate("carbon_per_liter" = carbon_count/ml_analyzed*1000) %>%
+  mutate("carbon_conc_mean" = carbon_per_liter/counts_per_liter) %>%
+  mutate("biovolume_mean" = biovolume_mm3/counts_per_liter) %>% #this makes a biovolume per liter column with the adjusted units mm3
+  group_by(group)
+  #filter(counts != 0) # this bit of code is if you want to remove all the rows with 0 values
+```
+
+
+```{r}
+# making a df with empty rows of the same length as df_count_taxa
+shark_col[1:nrow(df_count_taxa),] <- ""
+
+# adding in all the relevant data
+shark_df <- shark_col %>% 
+  mutate(MYEAR = format(df_count_taxa$sampling_date, format="%Y"), # YEAR
+         SAMPLING_PLATFORM = "RV_SVEA", #can skip if you dont want it
+         PROJ = "",
+         ORDERER = "SMHI", 
+         SHIPC = "77SE",
+         CRUISE_NO = "",
+         SDATE = df_count_taxa$sampling_date, # DATE Switch this to YYMM
+         DATE_TIME = df_count_taxa$datetime, # YYYYMMDDHHMMSS FORMAT
+         TIMEZONE = "UTC",
+         SAMPLE_TIME =df_count_taxa$sampling_time,
+         LATIT = df_count_taxa$LATX,
+         LONGI = df_count_taxa$LONX,
+         POSYS = "GPS",
+         MSTAT = "IFCB",
+         MPROG = "PROJ",
+         MNDEP = 4,
+         MXDEP = 4,
+         SLABO = "SMHI",
+         ACKR_SMP = "N",
+         SMTYP = "IFCB134",
+         SMVOL = df_count_taxa$ml_analyzed, # VOLUME
+         SMPNO = df_count_taxa$sample_name, # SAMPLE NAME
+         LATNM = df_count_taxa$species, # SPECIES
+         SFLAG = df_count_taxa$species_flag, # SP or SPP
+         COUNT = df_count_taxa$counts, # COUNTS per SAMPLE
+         ABUND_UNITS_PER_LITER = df_count_taxa$counts_per_liter, #COUNTS PER LITER
+         C_CONC = df_count_taxa$carbon_count, # CARBON
+         C_CONC_PER_LITER = df_count_taxa$carbon_per_liter, # CARBON PER LITER
+         MEAN_C_CONC_PER_CELL = df_count_taxa$carbon_conc_mean, #CARBON DIVIDED BY THE CELL COUNT
+         BIOVOL_PER_SAMPLE = df_count_taxa$biovolume, # BIOVOLUME
+         BIOVOL_PER_LITER = df_count_taxa$biovolume_mm3, #BIOVOLUME PER LITER
+         MEAN_BIOVOL_PER_CELL = df_count_taxa$biovolume_mean, #BIOVOLUME mm3 per liter DIVIDED BY THE CELL COUNT per liter
+         METOA = "AUTOMATED IMAGING INFLOW",
+         COUNTPROG = "CLASSIFIER SOFTWARE", 
+         ALABO = "SMHI",
+         ACKR_ANA = "N",
+         ANADATE = "", # ANALYSIS DATE -GET THIS FROM THE SAVE DATE ON THE MATLAB FILE?
+         METDC = "https://github.com/hsosik/ifcb-analysis", # METHOD
+         CLASS_N = df_count_taxa$classifiers_n , # NUMBER OF CLASSIFIERS
+        TAXON_N = df_count_taxa$n_species, # NUMBER OF TAXON IN SAMPLE ## cahnge this is shark col
+         TRAINING_SET_ANNOTATED_BY = "Ann-Turi Skjevik",
+         CLASSIFIER_CREATED_BY = "Kristie Rigby",
+         CLASSIFIER_USED = "",
+         MANUAL_QC_DATE = "",
+         PRE_FILTER_SIZE ="150" # unit μm
+         )
+
+# writing it as a csv file
+write_csv(shark_df, file="shark_data.csv") #change to tab separated
+write_delim(shark_df, file = "shark_data_cruise.txt") #this is for a tab delimited file
+```
+
+
+## Summaries
+```{r, echo=T, message=FALSE}
+species_summary <- df_counts_long %>% 
+  group_by(species) %>% 
+  summarise(total_counts = sum(counts_per_liter), 
+            total_biovolume_mm3 = sum(biovolume_mm3))
+species_summary
+
+sample_summary <- df_counts_long %>% 
+  group_by(sample_name) %>% 
+  summarise(total_counts = sum(counts_per_liter), 
+            total_biovolume_mm3 = sum(biovolume_mm3))
+sample_summary
+
+Group_summary <- df_count_taxa %>% 
+  group_by(group) %>% 
+  summarise(total_counts = sum(counts_per_liter), 
+            total_biovolume_mm3 = sum(biovolume_mm3))
+Group_summary
+
+HAB_summary <- df_count_taxa %>% 
+  group_by(HAB) %>% 
+  summarise(total_counts = sum(counts_per_liter), 
+            total_biovolume_mm3 = sum(biovolume_mm3))
+HAB_summary
+
+carbon_summary <- df_count_taxa %>% 
+  group_by(species) %>% 
+  summarise(total_counts = sum(counts_per_liter), 
+            total_biovolume_mm3 = sum(biovolume_mm3),
+            total_carbon = sum(carbon_per_liter))
+carbon_summary 
+
+carbon_summary_sample <- df_count_taxa %>% 
+  group_by(sample_name) %>% 
+  summarise(total_carbon = sum(carbon_per_liter, na.rm = TRUE))
+carbon_summary_sample 
+
+```
+
+## Plots
+
+#Scatter plot of biovolume by species.
+```{r}
+# Biovolume is in µm3 for the whole sample
+
+df_counts_long %>% 
+  group_by(species) %>% 
+  na_if(0) %>% 
+  ggplot(aes(y = biovolume_mm3, x = sampling_date, col = species)) +
+  geom_point() +
+      ggtitle("SVEA cruise IFCB data: Biovolume by Species") +
+           xlab("Sampling date") + ylab("Biovolume"~(mm^3))+
+  geom_jitter()+
+  theme_set(theme_bw())+
+  scale_colour_brewer(type = "seq", palette = "Spectral")+
+  scale_y_continuous(labels = label_comma())
+
+```
+
+#Scatter plot of biovolume by species with a limiter on the date
+```{r}
+df_counts_long %>% 
+  group_by(species) %>% 
+  na_if(0) %>% 
+  ggplot(aes(y = biovolume_mm3, x = sampling_date, col = species)) +
+  geom_point() +
+  scale_x_date(limits = as.Date(c("2022-05-19", "2022-05-24")))+
+      ggtitle("SVEA cruise IFCB data: Biovolume by Species") +
+           xlab("Sampling date") + ylab("Biovolume"~(mm^3))+
+  geom_jitter()+
+  theme_set(theme_bw())+
+  scale_colour_brewer(type = "seq", palette = "Spectral")+
+  scale_y_continuous(labels = label_comma())+
+  scale_y_continuous(limits = c(-0,150000))
+```
+
+#Stacked bar chart of biovolume by group
+```{r}
+df_count_taxa %>% 
+  group_by(group) %>%
+  na_if(0) %>% 
+  ggplot(aes(fill=group, y=biovolume_mm3, x=sampling_date)) + 
+    geom_bar(position="stack", stat="identity")+
+    ggtitle("SVEA cruise IFCB data: Biovolume by Group") +
+           xlab("Sampling date") + ylab("Biovolume"~(mm^3))+
+            scale_y_continuous(labels = label_comma())+
+  theme_set(theme_bw())+
+ scale_fill_manual(values=c('royalblue2', 'purple4', 'forestgreen', "red2"))
+
+```
+
+#Stacked bar chart of Group with a limiter set on the date
+```{r}
+df_count_taxa %>% 
+  group_by(group) %>%
+  na_if(0) %>% 
+  ggplot(aes(fill=group, y=biovolume_mm3, x=sampling_date)) + 
+  scale_x_date(limits = as.Date(c("2022-05-19", "2022-05-24")))+
+    geom_bar(position="stack", stat="identity")+
+    ggtitle("SVEA cruise IFCB data: Biovolume by Group- May 2022") +
+           xlab("Sampling date") + ylab("Biovolume"~(mm^3))+
+            scale_y_continuous(labels = label_comma())+
+   theme_set(theme_bw())+
+ scale_fill_manual(values=c('royalblue2', 'purple4', "red2"))
+
+```
+
+#Scatter plot of counts per litre by species
+```{r}
+df_counts_long %>% 
+  group_by(species) %>% 
+  na_if(0) %>% 
+ggplot(aes(y = counts_per_liter, x = sampling_date, col = species)) +
+  geom_point() +
+      ggtitle("SVEA cruise IFCB data: Counts by Species") +
+           xlab("Sampling date") + ylab("Counts"~(L^1))+
+  geom_jitter()+
+    theme_set(theme_bw())+
+  scale_colour_brewer(type = "seq", palette = "Spectral")+
+  scale_y_continuous(labels = label_comma())
+```
+
+#Scatter plot of counts per litre by species
+```{r}
+df_counts_long %>% 
+  group_by(species) %>% 
+  na_if(0) %>% 
+  ggplot(aes(y = counts_per_liter, x = sampling_date, col = species)) +
+  geom_point() +
+  scale_x_date(limits = as.Date(c("2022-05-19", "2022-05-24")))+
+      ggtitle("SVEA cruise IFCB data: Counts by Species") +
+           xlab("Sampling date") + ylab("Counts"~(L^1))+
+  geom_jitter()+
+    theme_set(theme_bw())+
+  scale_colour_brewer(type = "seq", palette = "Spectral")+
+  scale_y_continuous(labels = label_comma())+
+  scale_y_continuous(limits = c(-0, 11000))
+
+```
+
+#Stacked bar chart of counts per litre by group for all data
+```{r}
+df_count_taxa %>% 
+  group_by(group) %>%
+  na_if(0) %>% 
+  ggplot(aes(fill=group, y=counts_per_liter, x=sampling_date)) + 
+    geom_bar(position="stack", stat="identity")+
+    ggtitle("SVEA cruise IFCB data: Counts by Group") +
+           xlab("Sampling date") + ylab("Counts"~(L^1))+
+            scale_y_continuous(labels = label_comma())+
+    theme_set(theme_bw())+
+ scale_fill_manual(values=c('royalblue2', 'purple4', 'forestgreen', "red2"))
+
+```
+
+#Stacked bar chart of counts per litre by group for July 2022
+```{r}
+df_count_taxa %>% 
+  group_by(group) %>%
+  na_if(0) %>% 
+  ggplot(aes(fill=group, y=counts_per_liter, x=sampling_date)) + 
+  scale_x_date(limits = as.Date(c("2022-07-11", "2022-07-18")))+
+    geom_bar(position="stack", stat="identity")+
+    ggtitle("SVEA cruise IFCB data: Counts by Group- July 2022") +
+           xlab("Sampling date") + ylab("Counts"~(L^1))+
+            scale_y_continuous(labels = label_comma())+
+    theme_set(theme_bw())+
+ scale_fill_manual(values=c('royalblue2', 'purple4', 'forestgreen', "red2"))
+```
+
+#Stacked bar chart of group and biovolume with a limiter set on the date
+```{r}
+df_count_taxa %>% 
+  group_by(group) %>%
+  na_if(0) %>% 
+  ggplot(aes(fill=group, y=biovolume_mm3, x=sampling_date)) + 
+  scale_x_date(limits = as.Date(c("2022-05-19", "2022-05-24")))+
+    geom_bar(position="stack", stat="identity")+
+    ggtitle("SVEA cruise IFCB data: Biovolume by Group- May 2022") +
+           xlab("Sampling date") + ylab("Biovolume"~(mm^3))+
+            scale_y_continuous(labels = label_comma())+
+    theme_set(theme_bw())+
+ scale_fill_manual(values=c('royalblue2', 'purple4', "red2"))
+
+```
+#HABS
+```{r}
+df_count_taxa %>% 
+  group_by(group) %>%
+  na_if(0) %>% 
+  ggplot(aes(fill=HAB, y=biovolume_mm3, x=sampling_date)) + 
+  scale_x_date(limits = as.Date(c("2022-05-19", "2022-05-24")))+
+    geom_bar(position="stack", stat="identity")+
+    ggtitle("SVEA cruise IFCB data: Biovolume by Group- May 2022") +
+           xlab("Sampling date") + ylab("Biovolume"~(mm^3))+
+            scale_y_continuous(labels = label_comma())+
+    theme_set(theme_bw())+
+ scale_fill_manual(values=c('red2', 'forestgreen'))
+```
+#HABS all
+```{r}
+df_count_taxa %>% 
+  group_by(group) %>%
+  na_if(0) %>% 
+  ggplot(aes(fill=HAB, y=biovolume_mm3, x=sampling_date)) + 
+    geom_bar(position="stack", stat="identity")+
+    ggtitle("SVEA cruise IFCB data: Biovolume by Group- May 2022") +
+           xlab("Sampling date") + ylab("Biovolume"~(mm^3))+
+          scale_y_continuous(labels = label_comma())+
+      theme_set(theme_bw())+
+ scale_fill_manual(values=c('red2', 'forestgreen'))
+           
+```
+
+```{r}
+df_count_taxa %>% 
+  group_by(group) %>%
+  na_if(0) %>% 
+  ggplot(aes(fill=HAB, y=biovolume_mm3, x=sampling_date)) + 
+  scale_x_date(limits = as.Date(c("2022-05-19", "2022-05-24")))+
+    geom_bar(position="stack", stat="identity")+
+    ggtitle("SVEA cruise IFCB data: Biovolume by Group- May 2022") +
+           xlab("Sampling date") + ylab("Biovolume"~(mm^3))+
+            scale_y_continuous(labels = label_comma())+
+    theme_set(theme_bw())+
+ scale_fill_manual(values=c('red2', 'forestgreen'))
+```
+
+
+#Carbon
+```{r}
+df_count_taxa %>% 
+  group_by(sample_name) %>%
+  na_if(0) %>% 
+  ggplot(aes(fill=species, y=carbon_per_liter, x=sampling_date)) + 
+    geom_bar(position="stack", stat="identity")+
+    ggtitle("SVEA cruise IFCB data: Carbon by Group- May 2022") +
+           xlab("Sampling date") + ylab("Carbon pg")+
+          scale_y_continuous(labels = label_comma())+
+      theme_set(theme_bw())+
+ scale_colour_brewer(type = "seq", palette = "Spectral")
+           
+```
+
+
+# Maps
+
+```{r}
+library(ggOceanMaps)
+```
+
+
+```{r}
+# make basemap
+svea_cruise_map <- basemap(limits = c(8, 22, 54, 60), rotate = TRUE, bathymetry = FALSE) +
+  annotation_scale(location = "br") +
+  xlab("Longitude")  +
+  ylab("Latitude")
+
+svea_cruise_map +
+  geom_spatial_point(data = filter(df_count_taxa, counts != 0, group=="Diatom"), 
+                     aes(x = LONX, y = LATX, size = counts_per_liter)) +
+  ggtitle("Diatom") 
+```
+
+## Basin suggestions 
+```{r}
+df_count_taxa_basin <- df_count_taxa %>%
+  mutate(basin = case_when(LONX >= 8 & LONX <= 13 & LATX >= 57.895 & LATX <= 65 ~ "Skagerrak",
+                           LONX>= 8 & LONX <= 13 & LATX <= 57.895 & LATX >= 55.6 ~ "Kattegat",
+                           LONX >= 12.2 & LONX <= 26 & LATX <= 60 & LATX >= 53 ~ "Baltic_Proper")) %>% 
+  mutate(year = lubridate::year(sampling_date), month = lubridate::month(sampling_date)) %>% 
+  group_by(basin, year, month, group)
+
+
+svea_cruise_map +
+  geom_spatial_point(data = df_count_taxa_basin,  
+                     aes(x = LONX, y = LATX, size = counts_per_liter, colour=basin))
+```
+
+
+```{r}
+svea_cruise_map +
+  geom_spatial_point(data = filter(df_count_taxa_basin, month == 5),  
+                     aes(x = LONX, y = LATX, size = counts_per_liter, colour=basin)) +
+  ggtitle("May")
+
+svea_cruise_map +
+  geom_spatial_point(data = filter(df_count_taxa_basin, month == 7),  
+                     aes(x = LONX, y = LATX, size = counts_per_liter, colour=basin)) +
+  ggtitle("July")
+
+svea_cruise_map +
+  geom_spatial_point(data = filter(df_count_taxa_basin, month == 10),  
+                     aes(x = LONX, y = LATX, size = counts_per_liter, colour=basin)) +
+  ggtitle("October")
+
+```
+
+#adding the mean for counts per liter and mean for lat and long to add the pie charts to the map
+```{r}
+df_count_mean <- df_count_taxa_basin %>% 
+  summarise(mean = mean(counts_per_liter),
+            mean_lat = as.numeric(mean(LATX)),
+            mean_lon = as.numeric(mean(LONX)),
+            tot_counts = sum(counts)) %>% 
+  mutate(tot_counts =  sum(tot_counts)) %>% 
+  mutate(value = as.numeric(mean/sum(mean))) %>% 
+  filter(value !=0) %>% 
+  mutate(group = as.factor(group))
+```
+
+#Load the 
+```{r}
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(scatterpie)
+
+#you may need to install this as well
+#install.packages("devtools") # I guess you also need this
+#devtools::install_github("ropensci/rnaturalearthhires")
+#library("rnaturalearth")
+devtools::install_github("https://github.com/ropensci/rnaturalearthhires", force = TRUE)
+
+world <- ne_countries(scale = 'large', returnclass = "sf")
+svea_cruise_map_ne <- ggplot(data = world) +
+    geom_sf() +
+    #annotation_scale(location = "bl", width_hint = 0.5) +
+    #annotation_north_arrow(location = "bl", which_north = "true", pad_x = unit(0.75, "in"), pad_y = unit(0.5, "in"), style = north_arrow_fancy_orienteering) +
+    coord_sf(xlim = c(8, 22), ylim = c(54, 60))
+```
+
+## This makes some quick maps of sampling points, taxonomix groups, and numer of counts
+```{r}
+svea_cruise_map_ne + 
+  geom_point(data = filter(df_count_taxa_basin, month == 5), aes(x = LONX, y = LATX, colour=basin)) +
+  geom_scatterpie(data= filter(df_count_mean, month == 5), aes(x=mean_lon, y = mean_lat, r = log(tot_counts)*0.04), 
+                  cols = "group", colour = NA, long_format=TRUE) +
+  ggtitle("May")
+
+svea_cruise_map_ne + 
+  geom_point(data = filter(df_count_taxa_basin, month == 7), aes(x = LONX, y = LATX, colour=basin)) +
+  geom_scatterpie(data=
+                    filter(df_count_mean, month == 7), aes(x=mean_lon, y = mean_lat, r = log(tot_counts)*0.04), 
+                  cols = "group", colour = NA, long_format=TRUE) +
+  ggtitle("July")
+
+svea_cruise_map_ne + 
+  geom_point(data = filter(df_count_taxa_basin, month == 10), aes(x = LONX, y = LATX, colour=basin)) +
+  geom_scatterpie(data=
+                    filter(df_count_mean, month == 10), aes(x=mean_lon, y = mean_lat, r = log(tot_counts)*0.04), 
+                  cols = "group", colour = NA, long_format=TRUE) +
+  ggtitle("October")
+
+
+ggplot(filter(df_count_mean, month == 10, basin =="Baltic_Proper"), aes(x="", y=value, fill=group)) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0)
+
+```
+
+
+
+```{r}
+# Basic piechart
+df_count_mean %>% 
+  filter(month == 10, basin =="Baltic_Proper") %>% 
+    ggplot(aes(x=factor(1), y=value, fill=group)) +
+  geom_bar(stat="identity", width=1, colour = "white") +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  theme(legend.position = "none")
+
+df_count_mean %>% 
+    ggplot(aes(x=factor(1), y=value, fill=group)) +
+  geom_bar(stat="identity", width=1, colour = "white") +
+  coord_polar("y", start = 0) +
+  facet_grid(month~basin) +
+  theme_void() +
+  theme()
+```
+
+
