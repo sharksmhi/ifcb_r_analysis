@@ -6,8 +6,8 @@ output:
   rmarkdown::pdf_document:
     toc: true
     toc_depth: 2
-    toc_float: true
-    theme: united
+    # toc_float: true
+    # theme: united
     highlight: tango 
 editor_options:
   chunk_output_type: console
@@ -18,8 +18,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+library(here)
+
 # Set the working directory to where your files are stored
-setwd('')
+dataDir <- file.path(here(), "data")
+outputDir <- file.path(here(), "/output")
+plotsDir <- file.path(here(), "/plots")
 ```
 
 
@@ -36,18 +40,18 @@ library(hms)
 
 ```{r, echo=T, results='hide', message=FALSE}
 #load matlab data output files
-class2use <- read_csv("class2use.csv",col_names = 'class')
-biovolume <- read_csv("biovolume.csv",col_names = F)
-classcount <- read_csv("classcount.csv", col_names = F)
-filelist <- read_csv("filelist.csv", col_names = 'sample_name')
-date <- read_csv("date.csv", col_names = "sampling_date")
-ml_analyzed <- read_csv("ml_analyzed.csv",col_names = "ml_analyzed")
+class2use <- read_csv(file.path(dataDir,"class2use.csv"),col_names = 'class')
+biovolume <- read_csv(file.path(dataDir,"biovolume.csv"),col_names = F)
+classcount <- read_csv(file.path(dataDir,"classcount.csv"), col_names = F)
+filelist <- read_csv(file.path(dataDir,"filelist.csv"), col_names = 'sample_name')
+date <- read_csv(file.path(dataDir,"date.csv"), col_names = "sampling_date")
+ml_analyzed <- read_csv(file.path(dataDir,"ml_analyzed.csv"),col_names = "ml_analyzed")
 # load manually curated files
-taxa_list <- read_tsv("taxa_list.txt") #ttaxa list to make the groups (change this file when you add more species)
-shark_col <- read_tsv("shark_col.txt") # reads in a list of all the columns needed for the shark database
-lat_long_oct <- read_tsv("ifcb_merged_oct_2022.txt") #reads in the latitude and longitude files
-lat_long_july <- read_tsv("ifcb_merged_july_2022.txt")
-lat_long_may <- read_tsv("ifcb_merged_svea_may_2022.txt")
+taxa_list <- read_tsv(file.path(dataDir,"taxa_list.txt")) #ttaxa list to make the groups (change this file when you add more species)
+shark_col <- read_tsv(file.path(dataDir,"shark_col.txt")) # reads in a list of all the columns needed for the shark database
+lat_long_oct <- read_tsv(file.path(dataDir,"ifcb_merged_oct_2022.txt")) #reads in the latitude and longitude files
+lat_long_july <- read_tsv(file.path(dataDir,"ifcb_merged_july_2022.txt"))
+lat_long_may <- read_tsv(file.path(dataDir,"ifcb_merged_svea_may_2022.txt"))
 ```
 
 
@@ -162,12 +166,12 @@ shark_df <- shark_col %>%
          CLASSIFIER_CREATED_BY = "Kristie Rigby",
          CLASSIFIER_USED = "",
          MANUAL_QC_DATE = "",
-         PRE_FILTER_SIZE ="150" # unit μm
+         PRE_FILTER_SIZE ="150" # unit um
          )
 
 # writing it as a csv file
-write_csv(shark_df, file="shark_data.csv") #change to tab separated
-write_delim(shark_df, file = "shark_data_cruise.txt") #this is for a tab delimited file
+write_csv(shark_df, file=file.path(outputDir,"shark_data.csv")) #change to tab separated
+write_delim(shark_df, file = file.path(outputDir,"shark_data_cruise.txt")) #this is for a tab delimited file
 ```
 
 
@@ -215,11 +219,11 @@ carbon_summary_sample
 
 #Scatter plot of biovolume by species.
 ```{r}
-# Biovolume is in µm3 for the whole sample
+# Biovolume is in um3 for the whole sample
 
 df_counts_long %>% 
   group_by(species) %>% 
-  na_if(0) %>% 
+  mutate(across(where(is.numeric), ~na_if(., 0))) %>%
   ggplot(aes(y = biovolume_mm3, x = sampling_date, col = species)) +
   geom_point() +
       ggtitle("SVEA cruise IFCB data: Biovolume by Species") +
@@ -235,7 +239,7 @@ df_counts_long %>%
 ```{r}
 df_counts_long %>% 
   group_by(species) %>% 
-  na_if(0) %>% 
+  mutate(across(where(is.numeric), ~na_if(., 0))) %>%
   ggplot(aes(y = biovolume_mm3, x = sampling_date, col = species)) +
   geom_point() +
   scale_x_date(limits = as.Date(c("2022-05-19", "2022-05-24")))+
@@ -252,7 +256,7 @@ df_counts_long %>%
 ```{r}
 df_count_taxa %>% 
   group_by(group) %>%
-  na_if(0) %>% 
+  mutate(across(where(is.numeric), ~na_if(., 0))) %>%
   ggplot(aes(fill=group, y=biovolume_mm3, x=sampling_date)) + 
     geom_bar(position="stack", stat="identity")+
     ggtitle("SVEA cruise IFCB data: Biovolume by Group") +
@@ -267,7 +271,7 @@ df_count_taxa %>%
 ```{r}
 df_count_taxa %>% 
   group_by(group) %>%
-  na_if(0) %>% 
+  mutate(across(where(is.numeric), ~na_if(., 0))) %>%
   ggplot(aes(fill=group, y=biovolume_mm3, x=sampling_date)) + 
   scale_x_date(limits = as.Date(c("2022-05-19", "2022-05-24")))+
     geom_bar(position="stack", stat="identity")+
@@ -283,8 +287,8 @@ df_count_taxa %>%
 ```{r}
 df_counts_long %>% 
   group_by(species) %>% 
-  na_if(0) %>% 
-ggplot(aes(y = counts_per_liter, x = sampling_date, col = species)) +
+  mutate(across(where(is.numeric), ~na_if(., 0))) %>%
+  ggplot(aes(y = counts_per_liter, x = sampling_date, col = species)) +
   geom_point() +
       ggtitle("SVEA cruise IFCB data: Counts by Species") +
            xlab("Sampling date") + ylab("Counts"~(L^1))+
@@ -298,7 +302,7 @@ ggplot(aes(y = counts_per_liter, x = sampling_date, col = species)) +
 ```{r}
 df_counts_long %>% 
   group_by(species) %>% 
-  na_if(0) %>% 
+  mutate(across(where(is.numeric), ~na_if(., 0))) %>%
   ggplot(aes(y = counts_per_liter, x = sampling_date, col = species)) +
   geom_point() +
   scale_x_date(limits = as.Date(c("2022-05-19", "2022-05-24")))+
@@ -316,7 +320,7 @@ df_counts_long %>%
 ```{r}
 df_count_taxa %>% 
   group_by(group) %>%
-  na_if(0) %>% 
+  mutate(across(where(is.numeric), ~na_if(., 0))) %>%
   ggplot(aes(fill=group, y=counts_per_liter, x=sampling_date)) + 
     geom_bar(position="stack", stat="identity")+
     ggtitle("SVEA cruise IFCB data: Counts by Group") +
@@ -331,7 +335,7 @@ df_count_taxa %>%
 ```{r}
 df_count_taxa %>% 
   group_by(group) %>%
-  na_if(0) %>% 
+  mutate(across(where(is.numeric), ~na_if(., 0))) %>%
   ggplot(aes(fill=group, y=counts_per_liter, x=sampling_date)) + 
   scale_x_date(limits = as.Date(c("2022-07-11", "2022-07-18")))+
     geom_bar(position="stack", stat="identity")+
@@ -346,7 +350,7 @@ df_count_taxa %>%
 ```{r}
 df_count_taxa %>% 
   group_by(group) %>%
-  na_if(0) %>% 
+  mutate(across(where(is.numeric), ~na_if(., 0))) %>%
   ggplot(aes(fill=group, y=biovolume_mm3, x=sampling_date)) + 
   scale_x_date(limits = as.Date(c("2022-05-19", "2022-05-24")))+
     geom_bar(position="stack", stat="identity")+
@@ -361,7 +365,7 @@ df_count_taxa %>%
 ```{r}
 df_count_taxa %>% 
   group_by(group) %>%
-  na_if(0) %>% 
+  mutate(across(where(is.numeric), ~na_if(., 0))) %>%
   ggplot(aes(fill=HAB, y=biovolume_mm3, x=sampling_date)) + 
   scale_x_date(limits = as.Date(c("2022-05-19", "2022-05-24")))+
     geom_bar(position="stack", stat="identity")+
@@ -375,7 +379,7 @@ df_count_taxa %>%
 ```{r}
 df_count_taxa %>% 
   group_by(group) %>%
-  na_if(0) %>% 
+  mutate(across(where(is.numeric), ~na_if(., 0))) %>%
   ggplot(aes(fill=HAB, y=biovolume_mm3, x=sampling_date)) + 
     geom_bar(position="stack", stat="identity")+
     ggtitle("SVEA cruise IFCB data: Biovolume by Group- May 2022") +
@@ -389,7 +393,7 @@ df_count_taxa %>%
 ```{r}
 df_count_taxa %>% 
   group_by(group) %>%
-  na_if(0) %>% 
+  mutate(across(where(is.numeric), ~na_if(., 0))) %>%
   ggplot(aes(fill=HAB, y=biovolume_mm3, x=sampling_date)) + 
   scale_x_date(limits = as.Date(c("2022-05-19", "2022-05-24")))+
     geom_bar(position="stack", stat="identity")+
@@ -405,7 +409,7 @@ df_count_taxa %>%
 ```{r}
 df_count_taxa %>% 
   group_by(sample_name) %>%
-  na_if(0) %>% 
+  mutate(across(where(is.numeric), ~na_if(., 0))) %>%
   ggplot(aes(fill=species, y=carbon_per_liter, x=sampling_date)) + 
     geom_bar(position="stack", stat="identity")+
     ggtitle("SVEA cruise IFCB data: Carbon by Group- May 2022") +
@@ -494,7 +498,7 @@ library(scatterpie)
 #install.packages("devtools") # I guess you also need this
 #devtools::install_github("ropensci/rnaturalearthhires")
 #library("rnaturalearth")
-devtools::install_github("https://github.com/ropensci/rnaturalearthhires", force = TRUE)
+#devtools::install_github("https://github.com/ropensci/rnaturalearthhires", force = TRUE)
 
 world <- ne_countries(scale = 'large', returnclass = "sf")
 svea_cruise_map_ne <- ggplot(data = world) +

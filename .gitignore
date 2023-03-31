@@ -21,6 +21,8 @@ docs/*.pdf
 # data files
 data/*.csv
 data/*.txt
+output/*.csv
+output/*.txt
 
 # output files
 plots/*.jpg
