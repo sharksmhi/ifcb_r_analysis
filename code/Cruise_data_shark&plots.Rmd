@@ -22,8 +22,8 @@ library(here)
 
 # Set the working directory to where your files are stored
 dataDir <- file.path(here(), "data")
-outputDir <- file.path(here(), "/output")
-plotsDir <- file.path(here(), "/plots")
+outputDir <- file.path(here(), "output")
+plotsDir <- file.path(here(), "plots")
 ```
 
 
