@@ -23,11 +23,12 @@ data/*.csv
 data/*.txt
 output/*.csv
 output/*.txt
+output/classifier/*.txt
 
 # output files
-plots/*.jpg
-plots/*.pdf
-plots/*.png
+*.jpg
+*.pdf
+*.png
 
 # knitr and R markdown default cache directories
 /code/cache/
