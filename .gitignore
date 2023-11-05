@@ -21,9 +21,22 @@ docs/*.pdf
 # data files
 data/*.csv
 data/*.txt
+data/backup/
+data/baltic 2023/
+data/march/
+data/skagerrak-kattegat 2023/
+data/summary Baltic/
+data/summary Skagerrak-Kattegat/
+data/summary_until_march_2023/
+data/tollboden/
+data/tollboden/
+data/shapefiles/sharkweb_shapefiles/*
+!data/shapefiles/sharkweb_shapefiles/.gitkeep
 output/*.csv
 output/*.txt
 output/classifier/*.txt
+output/blobs_and_features/*.txt
+
 
 # output files
 *.jpg
