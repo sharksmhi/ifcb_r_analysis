@@ -46,7 +46,8 @@ missing_features <- blobsfilename[!blobsfilename %in% featurenames]
 sample_summary <- data_frame(
   dir = dirname(all_data_files)) %>% 
   count(dir) %>%
-  mutate(samples = n/3)
+  mutate(samples = n/3,
+         missing_file = !floor(samples)==samples)
 
 # Save data as a txt file
 write.table(missing_blobs, 
