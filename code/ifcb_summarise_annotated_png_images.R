@@ -1,6 +1,6 @@
 library(tidyverse)
 
-pngdir <- ""
+pngdir <- "//winfs-proj/data/proj/ifcb/work/data/png_images/"
 plotdir <- paste0(here::here(),"/plots/classifier/")
 outputdir <- paste0(here::here(),"/output/classifier/")
 
