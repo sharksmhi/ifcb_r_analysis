@@ -36,6 +36,8 @@ output/*.csv
 output/*.txt
 output/classifier/*.txt
 output/blobs_and_features/*.txt
+work/
+data/data/
 
 
 # output files
@@ -53,3 +55,6 @@ output/blobs_and_features/*.txt
 
 # RStudio
 .Rproj.user
+
+# Deprecated code
+code/old/
