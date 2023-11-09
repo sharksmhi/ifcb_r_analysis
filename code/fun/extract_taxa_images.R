@@ -6,6 +6,7 @@ library(R.matlab)
 extract_taxa_images <- function(sample, 
                                 classifier, 
                                 ifcb_path, 
+                                taxa = "All",
                                 ifcb_unit = "IFCB134", 
                                 version = "v1") {
   # Define year
@@ -27,9 +28,16 @@ extract_taxa_images <- function(sample,
   
   # Extract taxa list
   taxa.list <- as.data.frame(do.call(rbind, do.call(rbind, classified.mat$TBclass)),classified.mat$roinum) %>%
-    rownames_to_column("ROI")
+    rownames_to_column("ROI") 
+  
+  if(!taxa == "All") {
+    taxa.list <- taxa.list %>%
+      filter(V1 == taxa)
+  }
   
   # Loop for each taxa
+  
+if(nrow(taxa.list) > 0) {
   for (i in 1:length(unique(taxa.list$V1))) {
     taxa.list.ix <- taxa.list %>%
       filter(V1 == unique(taxa.list$V1)[[i]])
@@ -37,6 +45,7 @@ extract_taxa_images <- function(sample,
     extract_taxa_images_from_ROI(file.path(datadir, roifilename), outdir, unique(taxa.list.ix$V1), as.numeric(taxa.list.ix$ROI))
   }
 }
+  }
 
 # Usage:
 # classifier <- "Baltic"

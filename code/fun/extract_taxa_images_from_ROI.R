@@ -8,6 +8,7 @@ extract_taxa_images_from_ROI <- function(roifile, outdir, taxaname, ROInumbers =
   # Get ADC data for start byte and length of each ROI
   adcfile <- sub("\\.roi$", ".adc", roifile)
   adcdata <- read.csv(adcfile, header = FALSE, sep = ",")
+  adcdata <- adcdata[ROInumbers,]
   x <- as.numeric(adcdata$V16)
   y <- as.numeric(adcdata$V17)
   startbyte <- as.numeric(adcdata$V18)
@@ -40,9 +41,9 @@ extract_taxa_images_from_ROI <- function(roifile, outdir, taxaname, ROInumbers =
   for (count in 1:length(ROInumbers)) {
     if (x[count] > 0) {
       num <- ROInumbers[count]
-      seek(fid, startbyte[num])
-      img_data <- readBin(fid, raw(), n = x[num] * y[num])  # Read img pixels as raw
-      img_matrix <- matrix(unlist(img_data), ncol = x[num], byrow = TRUE)  # Reshape to original x-y array
+      seek(fid, startbyte[count])
+      img_data <- readBin(fid, raw(), n = x[count] * y[count])  # Read img pixels as raw
+      img_matrix <- matrix(unlist(img_data), ncol = x[count], byrow = TRUE)  # Reshape to original x-y array
       img_matrix <- apply(img_matrix, 2, convert_to_0_255)  # Convert to 0-255 range
       
       pngname <- paste0(tools::file_path_sans_ext(basename(roifile)), "_", sprintf("%05d", num), ".png")
