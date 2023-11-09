@@ -1,4 +1,6 @@
-datadir <- paste0("")
+library(sf)
+library(tidyverse)
+
 shapefilesDir <- "data/shapefiles/sharkweb_shapefiles/"
 
 basin_shapefile <- "Havsomr_SVAR_2016_3b_CP1252.shp"
@@ -8,10 +10,10 @@ source("code/ifcb_read_hdr_meta_data_v1.R")
 
 # Read shapefiles and list of basin names
 basins <- st_read(file.path(shapefilesDir, basin_shapefile))
-basin_names <- read_delim(file.path(shapefilesDir, params$basin_names), 
+basin_names <- read_delim(file.path(shapefilesDir, basin_names), 
                           delim = ";", 
                           col_names = TRUE, 
-                          locale = locale(encoding = params$encoding))
+                          locale = locale(encoding = "UTF-8"))
 
 # Set CRS of basin layer
 basins <- st_set_crs(basins, 3006)
@@ -46,7 +48,23 @@ allaifcb_data_wide_st <- allaifcb_data_wide_st %>%
   left_join(basin_names) %>%
   select(-geometry, -BASIN_NR)
 
+# Add classifier to samples west of Skagerrak
+allaifcb_data_wide_st <- allaifcb_data_wide_st %>%
+  mutate(classifier = ifelse(is.na(classifier), 
+                             ifelse(as.numeric(gpsLongitude) < 10, 
+                                    "Skagerrak-Kattegat", 
+                                    classifier), 
+                             classifier))
+
 # Back-transform to DF and translate basin nr
 allaifcb_data_wide_basin <- allaifcb_data_wide %>%
   left_join(allaifcb_data_wide_st) %>%
-  select(-lon, -lat)
+  select(File, gpsLatitude, gpsLongitude, rdate, classifier)
+
+# Save the data as a txt file
+write.table(allaifcb_data_wide_basin, 
+            "output/sample_classifier.txt",
+            sep = "\t",
+            quote = FALSE, 
+            na = "NA", 
+            row.names=F)
