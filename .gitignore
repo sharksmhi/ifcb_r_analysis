@@ -24,6 +24,9 @@ data/*.txt
 data/backup/
 data/baltic 2023/
 data/march/
+data/baltic 2023 november/
+data/skagerrak 2023 november/
+data/origin unknown/
 data/skagerrak-kattegat 2023/
 data/summary Baltic/
 data/summary Skagerrak-Kattegat/
@@ -36,6 +39,9 @@ output/*.csv
 output/*.txt
 output/classifier/*.txt
 output/blobs_and_features/*.txt
+output/classifier/
+!output/classifier/.gitkeep
+!output/classifier/corrected/.gitkeep
 work/
 data/data/
 
