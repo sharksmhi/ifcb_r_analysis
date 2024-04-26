@@ -1,0 +1,236 @@
+---
+title: "IFCB-Cruise Data summary"
+author: "Kristie Rigby"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::pdf_document:
+    toc: true
+    toc_depth: 2
+    # toc_float: true
+    # theme: united
+    highlight: tango 
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(here)
+
+# Set the working directory to where your files are stored
+dataDir <- file.path(here(), "data")
+outputDir <- file.path(here(), "output")
+plotsDir <- file.path(here(), "plots")
+```
+
+
+```{r, echo=T, results='hide', message=FALSE}
+#load packages
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(scales)
+library(hms)
+library(ggOceanMaps)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(scatterpie)
+#library(kabelExtra)
+```
+
+```{r, echo=T, results='hide', message=FALSE}
+timestamp <- as.Date(file.info(file.path(dataDir,"classcount.csv"))$mtime)
+classifier <- "Baltic"
+
+#load matlab data output files
+class2use <- read_csv(file.path(dataDir,"class2use.csv"),col_names = 'class')
+biovolume <- read_csv(file.path(dataDir,"biovolume.csv"),col_names = F)
+classcount <- read_csv(file.path(dataDir,"classcount.csv"), col_names = F)
+filelist <- read_csv(file.path(dataDir,"filelistTB.csv"), col_names = 'sample_name')
+date <- read_csv(file.path(dataDir,"date.csv"), col_names = "sampling_date")
+ml_analyzed <- read_csv(file.path(dataDir,"ml_analyzed.csv"),col_names = "ml_analyzed")
+# load manually curated files
+if (classifier == "Skagerrak-Kattegat") {
+  taxa_list <- read_tsv(file.path(dataDir,"taxa_list_skagerrak-kattegat.txt")) #ttaxa list to make the groups (change this file when you add more species)
+}
+if (classifier == "Baltic") {
+  taxa_list <- read_tsv(file.path(dataDir,"taxa_list_baltic.txt")) #ttaxa list to make the groups (change this file when you add more species)
+}
+shark_col <- read_tsv(file.path(dataDir,"shark_col.txt")) # reads in a list of all the columns needed for the shark database
+
+# lat_long_oct <- read_tsv(file.path(dataDir,"ifcb_merged_oct_2022.txt")) #reads in the latitude and longitude files
+# lat_long_july <- read_tsv(file.path(dataDir,"ifcb_merged_july_2022.txt"))
+# lat_long_may <- read_tsv(file.path(dataDir,"ifcb_merged_svea_may_2022.txt"))
+lat_long_2023 <- read_tsv(file.path(outputDir,"allifcb_data_wide_march_2023.txt"))
+qflags <- read_csv(file.path(dataDir,"svea_2023_flags.csv"), col_names = T)
+sea_basin <- read_tsv(file.path(outputDir,"sample_classifier_2023.txt"))
+```
+
+
+```{r, echo=T, results='hide', message=FALSE}
+#merge the csv files into one data frame called df_counts
+colnames(classcount) <- paste("counts", gsub("_", " ", class2use$class), sep="_") # assign species names from class2use to classcount
+colnames(biovolume) <- paste("biovolume", gsub("_", " ", class2use$class), sep="_") # assign species names from class2use to biovolume
+df_counts <- bind_cols(filelist, ml_analyzed, date, classcount,biovolume) #combine the filelist with the ml_analayzed and classcount
+df_counts
+```
+
+```{r}
+# merging and cleaning lat long files
+
+# read wide instead
+# 
+# lat_long <- bind_rows(lat_long_may, lat_long_july, lat_long_oct) %>% 
+#   select(File, LATX, LONX) %>% 
+#   mutate(File = gsub(".adc", "", File))
+
+lat_long <- lat_long_2023 %>%
+  select(File, gpsLatitude, gpsLongitude) %>%
+  rename(LATX = gpsLatitude,
+         LONX = gpsLongitude) %>%
+  mutate(File = gsub(".hdr", "", File))
+
+basin <- sea_basin %>%
+  mutate(file = gsub("_.*","", File)) %>%
+  select(file, classifier)
+
+in_harbour <- sea_basin %>%
+  mutate(file = gsub("_.*","", File)) %>%
+  filter(is.na(classifier)) %>%
+  select(file) %>%
+  mutate(land_flag = "Near land")
+
+qflags_land <- qflags %>%
+  select(-...1) %>%
+  full_join(in_harbour) %>%
+  unite(col = flag, flag, land_flag, na.rm = T, sep = ", ")
+```
+
+```{r, echo=T, results='hide', message=FALSE}
+#transforming the data set to a long format and adds a column with counts per litre 
+df_counts_long <- df_counts %>% pivot_longer(
+  cols = !c("sample_name", "ml_analyzed", "sampling_date"), # pivots all but these
+  names_sep = "_",
+  names_to = c("type", "species"), 
+  values_to = "value") %>% 
+  pivot_wider(names_from = type, values_from = value) %>% 
+  mutate("counts_per_liter" = counts/ml_analyzed*1000) %>% 
+  mutate("biovolume_per_liter" = biovolume/ml_analyzed*1000) %>% 
+  mutate("biovolume_mm3" = biovolume_per_liter/1000) %>% 
+  mutate(sampling_date = as.Date(sampling_date, origin = "1970-01-01") - 719529) %>% 
+  mutate("sampling_time" = paste0(
+    str_sub(sample_name, start = 11L, end = 12L), ":", 
+    str_sub(sample_name, start = 13L, end = 14L), ":",
+    str_sub(sample_name, start = 15L, end = 16L))) %>% 
+  mutate("datetime" = gsub("D", "", 
+                      gsub ("T", "", 
+                      gsub("_IFCB134", "" ,sample_name))))
+```
+
+```{r}
+#creates the number of taxa found in the sample (i.e 3 out of the 10 total)
+species_counts <- df_counts_long %>% 
+  filter(counts > 0) %>% 
+  group_by(sample_name) %>% 
+  count(sample_name) %>% 
+  transmute(n_species = n)
+```
+
+
+```{r}
+# carbon_f1 beräknad på total kol, bättre på individnivå
+
+# makes a dataframe called df_count_taxa where it adds and assigning the group and HAB to the species (long format). Adds the columns for the carbon content, and the means
+df_count_taxa <- left_join(df_counts_long, taxa_list, by = "species") %>% 
+  left_join(lat_long, by = c("sample_name" = "File")) %>% 
+  left_join(species_counts, by  = "sample_name") %>% 
+  mutate(file = gsub("_.*","", sample_name)) %>%
+  left_join(qflags_land, by = "file") %>%
+  left_join(basin, by = "file") %>%
+  mutate(carbon_count = carbon_f1*biovolume^carbon_f2) %>% #calculating carbon divide this by the counts
+  mutate(classifiers_n = n_distinct(species)) %>%
+  mutate("carbon_per_liter" = carbon_count/ml_analyzed*1000) %>%
+  mutate("carbon_conc_mean" = carbon_per_liter/counts_per_liter) %>%
+  mutate("biovolume_mean" = biovolume_mm3/counts_per_liter) %>% #this makes a biovolume per liter column with the adjusted units mm3
+  group_by(group)
+  #filter(counts != 0) # this bit of code is if you want to remove all the rows with 0 values
+```
+
+
+```{r}
+# making a df with empty rows of the same length as df_count_taxa
+shark_col[1:nrow(df_count_taxa),] <- ""
+
+# adding in all the relevant data
+shark_df <- shark_col %>% 
+  mutate(MYEAR = format(df_count_taxa$sampling_date, format="%Y"), # YEAR
+         STATN = df_count_taxa$sample_name,
+         SAMPLING_PLATFORM = "RV_SVEA", #can skip if you dont want it
+         PROJ = "",
+         ORDERER = "SMHI", 
+         SHIPC = "77SE",
+         CRUISE_NO = "",
+         SDATE = df_count_taxa$sampling_date, # DATE Switch this to YYMM
+         DATE_TIME = df_count_taxa$datetime, # YYYYMMDDHHMMSS FORMAT
+         TIMEZONE = "UTC",
+         SAMPLE_TIME =df_count_taxa$sampling_time,
+         LATIT = df_count_taxa$LATX,
+         LONGI = df_count_taxa$LONX,
+         POSYS = "GPS",
+         MSTAT = "IFCB",
+         MPROG = "PROJ",
+         MNDEP = 4,
+         MXDEP = 4,
+         SLABO = "SMHI",
+         ACKR_SMP = "N",
+         SMTYP = "IFCB134",
+         SMVOL = df_count_taxa$ml_analyzed, # VOLUME
+         SMPNO = df_count_taxa$sample_name, # SAMPLE NAME
+         LATNM = df_count_taxa$species, # SPECIES
+         SFLAG = df_count_taxa$species_flag, # SP or SPP
+         PD = df_count_taxa$pd,
+         PR = df_count_taxa$pr,
+         COUNT = df_count_taxa$counts, # COUNTS per SAMPLE
+         COEFF = 1000/df_count_taxa$ml_analyzed,
+         ABUND_UNITS_PER_LITER = df_count_taxa$counts_per_liter, #COUNTS PER LITER
+         QFLAG = df_count_taxa$flag,
+         C_CONC = df_count_taxa$carbon_count, # CARBON
+         C_CONC_PER_LITER = df_count_taxa$carbon_per_liter, # CARBON PER LITER
+         MEAN_C_CONC_PER_CELL = df_count_taxa$carbon_conc_mean, #CARBON DIVIDED BY THE CELL COUNT
+         BIOVOL_PER_SAMPLE = df_count_taxa$biovolume, # BIOVOLUME
+         BIOVOL_PER_LITER = df_count_taxa$biovolume_mm3, #BIOVOLUME PER LITER
+         MEAN_BIOVOL_PER_CELL = df_count_taxa$biovolume_mean, #BIOVOLUME mm3 per liter DIVIDED BY THE CELL COUNT per liter
+         METOA = "AUTOMATED IMAGING INFLOW",
+         COUNTPROG = "CLASSIFIER SOFTWARE", 
+         ALABO = "SMHI",
+         ACKR_ANA = "N",
+         ANADATE = timestamp, # ANALYSIS DATE -GET THIS FROM THE SAVE DATE ON THE MATLAB FILE?
+         METDC = "https://github.com/hsosik/ifcb-analysis, https://github.com/kudelalab/PSD", # METHOD
+         CLASS_N = df_count_taxa$classifiers_n , # NUMBER OF CLASSIFIERS
+         TAXON_N = df_count_taxa$n_species, # NUMBER OF TAXON IN SAMPLE ## cahnge this is shark col
+         TRAINING_SET_ANNOTATED_BY = "Ann-Turi Skjevik",
+         CLASSIFIER_CREATED_BY = "Anders Torstensson",
+         CLASSIFIER_USED = classifier,
+         MANUAL_QC_DATE = "",
+         PRE_FILTER_SIZE ="150", # unit um
+         SEA_BASIN = df_count_taxa$classifier
+  ) %>%
+  filter(!COUNT == 0)
+
+if (classifier == "Baltic") {
+  # writing it as a csv file
+  write_csv(shark_df, file=file.path(outputDir,"shark_data_baltic_2023.csv")) #change to tab separated
+  write_delim(shark_df, file = file.path(outputDir,"shark_data_cruise_baltic_2023.txt"), delim = "\t", na = "") #this is for a tab delimited file
+}
+
+if (classifier == "Skagerrak-Kattegat") {
+  # writing it as a csv file
+  write_csv(shark_df, file=file.path(outputDir,"shark_data_skagerrak-kattegat_2023.csv")) #change to tab separated
+  write_delim(shark_df, file = file.path(outputDir,"shark_data_cruise_skagerrak-kattegat_2023.txt"), delim = "\t", na = "") #this is for a tab delimited file
+}
+```
+
