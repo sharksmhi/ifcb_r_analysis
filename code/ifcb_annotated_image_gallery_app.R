@@ -19,7 +19,9 @@ ui <- fluidPage(
       selectInput("imagesPerPage", "Images per page:",
                   choices = c(20, 50, 100),
                   selected = 20),
-      tags$div(id = "log_info")
+      tags$div(id = "log_info"),
+      actionButton("select_all", "Select All on Page"),
+      actionButton("unselect_all", "Unselect All on Page")
     )
   )
 )
@@ -102,6 +104,20 @@ server <- function(input, output, session) {
     } else {
       clicked_images(clicked_images()[!clicked_images() %in% input$clicked_image])
     }
+  })
+  
+  observeEvent(input$select_all, {
+    start_index <- (current_page() - 1) * as.numeric(images_per_page()) + 1
+    end_index <- min(current_page() * as.numeric(images_per_page()), length(images()))
+    selected_images <- images()[start_index:end_index]
+    clicked_images(union(clicked_images(), basename(selected_images)))
+  })
+  
+  observeEvent(input$unselect_all, {
+    start_index <- (current_page() - 1) * as.numeric(images_per_page()) + 1
+    end_index <- min(current_page() * as.numeric(images_per_page()), length(images()))
+    unselected_images <- images()[start_index:end_index]
+    clicked_images(clicked_images()[!clicked_images() %in% basename(unselected_images)])
   })
   
   output$log_info <- renderText({
