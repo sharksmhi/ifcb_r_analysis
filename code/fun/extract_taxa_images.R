@@ -13,9 +13,9 @@ extract_taxa_images <- function(sample,
   year <- substr(sample, start = 2, stop = 5)
   
   # Define paths
-  classifieddir <- paste(ifcb_path, "work/data/classified", classifier, year, sep = "/")
-  datadir <- paste(ifcb_path, "work/data/data", year, sep = "/")
-  outdir <- paste(ifcb_path, "work/data/classified_images", classifier, sep = "/")
+  classifieddir <- paste(ifcb_path, "classified", classifier, year, sep = "/")
+  datadir <- paste(ifcb_path, "data", year, sep = "/")
+  outdir <- paste(ifcb_path, "classified_images", classifier, sep = "/")
   
   # Store classified sample filename
   classifiedfilename <- paste0(sample, "_", ifcb_unit, "_class_", version, ".mat")
@@ -39,10 +39,15 @@ extract_taxa_images <- function(sample,
   
 if(nrow(taxa.list) > 0) {
   for (i in 1:length(unique(taxa.list$V1))) {
-    taxa.list.ix <- taxa.list %>%
-      filter(V1 == unique(taxa.list$V1)[[i]])
-    
-    extract_taxa_images_from_ROI(file.path(datadir, roifilename), outdir, unique(taxa.list.ix$V1), as.numeric(taxa.list.ix$ROI))
+    tryCatch({
+      taxa.list.ix <- taxa.list %>%
+        filter(V1 == unique(taxa.list$V1)[[i]])
+      
+      extract_taxa_images_from_ROI(file.path(datadir, roifilename), outdir, unique(taxa.list.ix$V1), as.numeric(taxa.list.ix$ROI))
+    }, error = function(e) {
+      cat("Error occurred:", conditionMessage(e), "\n")
+      Sys.sleep(10) # Pause for 10 seconds
+    })
   }
 }
   }

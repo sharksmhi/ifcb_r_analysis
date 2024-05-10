@@ -41,25 +41,28 @@ extract_taxa_images_from_ROI <- function(roifile, outdir, taxaname, ROInumbers =
   for (count in 1:length(ROInumbers)) {
     if (x[count] > 0) {
       num <- ROInumbers[count]
-      seek(fid, startbyte[count])
-      img_data <- readBin(fid, raw(), n = x[count] * y[count])  # Read img pixels as raw
-      img_matrix <- matrix(unlist(img_data), ncol = x[count], byrow = TRUE)  # Reshape to original x-y array
-      img_matrix <- apply(img_matrix, 2, convert_to_0_255)  # Convert to 0-255 range
-      
       pngname <- paste0(tools::file_path_sans_ext(basename(roifile)), "_", sprintf("%05d", num), ".png")
       pngfile <- file.path(outpath, pngname)
       
-      tryCatch({
-        # Convert the integers to the appropriate data type for PNG
-        img_matrix <- imager::as.cimg(img_matrix)
+      if (!file.exists(pngfile)) {
+        seek(fid, startbyte[count])
+        img_data <- readBin(fid, raw(), n = x[count] * y[count])  # Read img pixels as raw
+        img_matrix <- matrix(unlist(img_data), ncol = x[count], byrow = TRUE)  # Reshape to original x-y array
+        img_matrix <- apply(img_matrix, 2, convert_to_0_255)  # Convert to 0-255 range
         
-        # Write ROI in PNG format
-        imager::save.image(img_matrix, pngfile)
-      }, error = function(e) {
-        # Handle the error
-        cat("An error occurred:", conditionMessage(e), "\n")
-      })
-
+        tryCatch({
+          # Convert the integers to the appropriate data type for PNG
+          img_matrix <- imager::as.cimg(img_matrix)
+          
+          # Write ROI in PNG format
+          imager::save.image(img_matrix, pngfile)
+        }, error = function(e) {
+          # Handle the error
+          cat("An error occurred:", conditionMessage(e), "\n")
+        })
+      } else {
+        cat("PNG file already exists:", pngfile, "\n")
+      }
     }
   }
   
