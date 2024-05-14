@@ -26,7 +26,7 @@ ui <- fluidPage(
       ),
       selectInput("imagesPerPage", "Images per page:",
                   choices = c(20, 50, 100),
-                  selected = 20),
+                  selected = 100),
       tags$div(id = "log_info"),
       actionButton("select_all", "Select All on Page"),
       actionButton("unselect_all", "Unselect All on Page"),
