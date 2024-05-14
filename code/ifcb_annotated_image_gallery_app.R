@@ -4,24 +4,35 @@ library(base64enc)
 
 # Define UI
 ui <- fluidPage(
-  titlePanel("IFCB annotated image gallery"),
+  titlePanel("IFCB image gallery"),
   sidebarLayout(
     sidebarPanel(
-      tags$label("Enter the path to the folder:"),
-      textInput("path", "Folder Path", placeholder = "e.g., C:/path/to/annotated/images"),
+      tags$label("Path to folder containing .png images:"),
+      textInput("path", NULL, placeholder = "e.g., C:/path/to/taxon_images"),
       actionButton("go", "Go"),
-      downloadButton("download", "Summary of selected images")
+      downloadButton("download", "List of selected images"),
+      fileInput("upload", "Upload text file and apply image filter"),
+      actionButton("browse", "Browse...")
     ),
     mainPanel(
+      fluidRow(
+        column(6, actionButton("prev_top", "Previous")),
+        column(6, actionButton("next_top", "Next"))
+      ),
       uiOutput("gallery"),
-      actionButton("prev", "Previous"),
-      actionButton("next_button", "Next"),
+      fluidRow(
+        column(6, actionButton("prev", "Previous")),
+        column(6, actionButton("next_button", "Next"))
+      ),
       selectInput("imagesPerPage", "Images per page:",
                   choices = c(20, 50, 100),
                   selected = 20),
       tags$div(id = "log_info"),
       actionButton("select_all", "Select All on Page"),
-      actionButton("unselect_all", "Unselect All on Page")
+      actionButton("unselect_all", "Unselect All on Page"),
+      fluidRow(
+        column(12, uiOutput("page_info"))
+      )
     )
   )
 )
@@ -58,6 +69,14 @@ server <- function(input, output, session) {
     current_page(1)
   })
   
+  observeEvent(input$upload, {
+    req(input$upload)
+    uploaded_text <- read.table(input$upload$datapath, header = TRUE, sep = "\t")
+    uploaded_images <- uploaded_text$image_filename
+    filtered_images <- images()[basename(images()) %in% uploaded_images]
+    images(filtered_images)
+  })
+  
   output$gallery <- renderUI({
     if (is.null(images()) || length(images()) == 0) {
       return(tags$p("No images found in the specified directory."))
@@ -88,7 +107,19 @@ server <- function(input, output, session) {
     }
   })
   
+  observeEvent(input$prev_top, {
+    if (current_page() > 1) {
+      current_page(current_page() - 1)
+    }
+  })
+  
   observeEvent(input$next_button, {
+    if (current_page() < ceiling(length(images()) / as.numeric(images_per_page()))) {
+      current_page(current_page() + 1)
+    }
+  })
+  
+  observeEvent(input$next_top, {
     if (current_page() < ceiling(length(images()) / as.numeric(images_per_page()))) {
       current_page(current_page() + 1)
     }
@@ -122,6 +153,10 @@ server <- function(input, output, session) {
   
   output$log_info <- renderText({
     paste("Clicked Images:", paste(clicked_images(), collapse = ", "))
+  })
+  
+  output$page_info <- renderText({
+    paste("Page", current_page(), "of", ceiling(length(images()) / as.numeric(images_per_page())))
   })
   
   # Generate and download text file with selected images summary
