@@ -44,12 +44,17 @@ output/classifier/
 !output/classifier/corrected/.gitkeep
 work/
 data/data/
+data/png_images/
+data/skagerrak 2023 january 2024/
+data/baltic 2023 january 2024/
+
 
 
 # output files
 *.jpg
 *.pdf
 *.png
+*.mat
 
 # knitr and R markdown default cache directories
 /code/cache/
@@ -64,3 +69,8 @@ data/data/
 
 # Deprecated code
 code/old/
+
+# python environment
+code/python/venv
+code/python/edit_manual_file/__pycache__
+.idea/
