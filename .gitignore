@@ -48,8 +48,6 @@ data/png_images/
 data/skagerrak 2023 january 2024/
 data/baltic 2023 january 2024/
 
-
-
 # output files
 *.jpg
 *.pdf
@@ -69,6 +67,7 @@ data/baltic 2023 january 2024/
 
 # Deprecated code
 code/old/
+code/fun/old/
 
 # python environment
 code/python/venv
