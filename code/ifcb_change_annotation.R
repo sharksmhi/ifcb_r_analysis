@@ -29,7 +29,7 @@ corrections <- read.table(file.path(correction_path, correction_file), header = 
 corrections_aggregated <- aggregate(roi ~ sample_filename, data = corrections, FUN = function(x) list(x))
 
 # Define new class
-correct_classid <- as.integer(99)
+correct_classid <- as.integer(1) # Change to unclassified (#1)
 
 # Loop for all files
 for (i in 1:nrow(corrections_aggregated)) {
