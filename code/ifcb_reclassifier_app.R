@@ -9,7 +9,8 @@ classifier <- "Baltic"
 taxa <- "Dinophysis acuminata"
 
 # Define your config data path
-config_path <- ""
+ifcb_dir <- Sys.getenv("ifcb_path")
+config_path <- file.path(ifcb_dir, "config/")
 
 # Define filenames
 class2use_file <- "class2use_Baltic.mat"
@@ -21,7 +22,7 @@ class2use <- get_class2use(file.path(config_path, class2use_file))
 class2use <- class2use[!class2use == taxa]
 
 # Set the paths to your image folders
-source_folder <- file.path("", classifier, taxa)
+source_folder <- file.path(ifcb_dir, "classified_images", classifier, taxa)
 destination_folder1 <- file.path("output/classifier/corrected", classifier, taxa)
 
 # List all PNG files in the source folder

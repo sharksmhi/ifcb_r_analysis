@@ -1,7 +1,7 @@
 library(R.matlab)
 
 # Define your ifcb data path
-ifcb_path <- ""
+ifcb_path <- Sys.getenv("ifcb_base_path")
 
 classifier <- "Baltic" #
 

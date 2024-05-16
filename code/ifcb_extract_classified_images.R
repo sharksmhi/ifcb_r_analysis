@@ -4,7 +4,7 @@ source("code/fun/extract_taxa_images_from_ROI.R")
 source("code/fun/get_class2use.R")
 
 # Define your ifcb data path
-ifcb_path <- ""
+ifcb_path <- Sys.getenv("ifcb_path")
 config_path <- paste0(ifcb_path, "/config")
 out_path <- "output"
 classifier_path_b <- paste0(ifcb_path, "/classified/Baltic/2023")

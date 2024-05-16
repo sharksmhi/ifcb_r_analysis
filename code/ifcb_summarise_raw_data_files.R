@@ -6,7 +6,7 @@ library(here)
 year <- 2023
 
 # Define your ifcb data path
-ifcb_path <- ""
+ifcb_path <- Sys.getenv("ifcb_base_path")
 
 # Define paths
 blobsdir <- paste(ifcb_path, "work/data/blobs", year, sep = "/")

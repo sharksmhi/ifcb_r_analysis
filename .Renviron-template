@@ -1,0 +1,4 @@
+correction_path = "path/to/correction/txt/folder/"
+manual_path = "path/to/manual/folder/"
+ifcb_path = "path/to/work/data/folder/"
+ifcb_base_path = "path/to/base/ifcb/folder/"

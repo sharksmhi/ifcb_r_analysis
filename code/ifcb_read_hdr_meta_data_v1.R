@@ -21,6 +21,9 @@ library(here)
 bpath<-here() # set base path
 setwd(bpath) # set working directory
 
+ifcb_dir <- Sys.getenv("ifcb_path")
+datadir <- file.path(ifcb_dir, "data/2023/")
+
 # define start and end dates ------------------------------------------
 start_of_cruise <- ISOdatetime(2023,3,9,0,0,0, tz = "GMT")
 end_of_cruise <- ISOdatetime(2023,3,14,23,59,59, tz = "GMT")
@@ -28,8 +31,8 @@ end_of_cruise <- ISOdatetime(2023,3,14,23,59,59, tz = "GMT")
 start_end <- c(start_of_cruise,end_of_cruise)
 
 # load all light ship data, a large number of files ----
-allifcb_data <- read_bulk(directory = "data/IFCBdata_march_2023", 
-                          subdirectories = FALSE,
+allifcb_data <- read_bulk(directory = datadir, 
+                          subdirectories = TRUE,
                           extension = ".hdr",
                           data = NULL, 
                           verbose = TRUE,

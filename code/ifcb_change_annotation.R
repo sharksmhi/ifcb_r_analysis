@@ -8,13 +8,13 @@ use_virtualenv("code/python/venv")
 # Now try to import the python function
 source_python("code/python/edit_manual_file/edit_manual_file.py")
 
-# Define your ifcb data path
-correction_path <- "" # Enter path to folder with correction filenames
-manual_path <- "" # Enter path to manual folder
-file_path <- file.path(manual_path, classifier)
-
 # Define which classifier you are working on
 classifier <- "Baltic"
+
+# Define your ifcb data path from project environment
+correction_path <- Sys.getenv("correction_path")
+manual_path <- Sys.getenv("manual_path")
+file_path <- file.path(manual_path, classifier)
 
 # Define which correction file to use
 correction_file <- "Aphanizomenon_002_selected_images_bundles.txt"
