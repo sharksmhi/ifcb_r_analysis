@@ -5,12 +5,8 @@ library(reticulate)
 virtualenv_create("code/python/venv", requirements = "code/python/edit_manual_file/requirements.txt")
 use_virtualenv("code/python/venv")
 
-# Add the directory containing the script to sys.path
-path_to_script <- file.path(here::here(), "code/python/edit_manual_file")
-py_run_string(paste0("import sys\nsys.path.append('", path_to_script, "')"))
-
-# Now try to import the python module
-py <- import("edit_manual_file")
+# Now try to import the python function
+source_python("code/python/edit_manual_file/edit_manual_file.py")
 
 # Define your ifcb data path
 correction_path <- "" # Enter path to folder with correction filenames
@@ -45,7 +41,7 @@ for (i in 1:nrow(corrections_aggregated)) {
   roi <- lapply(roi_list, as.integer)  # Use lapply to ensure we get a list
   
   # Call the Python function with the extracted values
-  py$edit_manual_file(
+  edit_manual_file(
     file.path(file_path, paste0(filename, ".mat")),  # Ensure correct file path
     file.path("output/manual", classifier, paste0(filename, ".mat")),  # Ensure correct output file path
     roi,
