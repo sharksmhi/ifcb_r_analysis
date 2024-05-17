@@ -1,6 +1,6 @@
 library(shiny)
 library(shinyjs)
-source("code/fun/get_class2use.R")
+source("code/R/fun/get_class2use.R")
 
 # Select classifier
 classifier <- "Baltic"

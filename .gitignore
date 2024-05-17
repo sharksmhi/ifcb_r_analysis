@@ -72,8 +72,7 @@ data/baltic 2023 april 2024/
 .Rproj.user
 
 # Deprecated code
-code/old/
-code/fun/old/
+old
 
 # python environment
 code/python/venv

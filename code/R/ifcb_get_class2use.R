@@ -1,6 +1,6 @@
 library(tidyverse)
 
-source("code/fun/get_class2use.R")
+source("code/R/fun/get_class2use.R")
 
 # Define your data paths
 ifcb_path <- Sys.getenv("ifcb_path")

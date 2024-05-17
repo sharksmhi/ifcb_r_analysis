@@ -1,7 +1,7 @@
 # Source functions
-source("code/fun/extract_taxa_images.R")
-source("code/fun/extract_taxa_images_from_ROI.R")
-source("code/fun/get_class2use.R")
+source("code/R/fun/extract_taxa_images.R")
+source("code/R/fun/extract_taxa_images_from_ROI.R")
+source("code/R/fun/get_class2use.R")
 
 # Define your ifcb data path
 ifcb_path <- Sys.getenv("ifcb_path")
