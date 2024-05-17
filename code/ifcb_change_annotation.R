@@ -2,11 +2,11 @@ library(tidyverse)
 library(reticulate)
 
 # Setup virtual environment
-virtualenv_create("code/python/venv", requirements = "code/python/edit_manual_file/requirements.txt")
+virtualenv_create("code/python/venv", requirements = "code/python/requirements.txt")
 use_virtualenv("code/python/venv")
 
 # Now try to import the python function
-source_python("code/python/edit_manual_file/edit_manual_file.py")
+source_python("code/python/edit_manual_file.py")
 
 # Define which classifier you are working on
 classifier <- "Baltic"
