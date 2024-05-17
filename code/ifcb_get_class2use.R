@@ -3,7 +3,8 @@ library(tidyverse)
 source("code/fun/get_class2use.R")
 
 # Define your data paths
-config_path <- ""
+ifcb_path <- Sys.getenv("ifcb_path")
+config_path <- paste0(ifcb_path, "/config")
 class2use_B_file <- "class2use_Baltic.mat"
 class2use_SK_file <- "class2use_Kattegat-Skagerrak.mat"
 
