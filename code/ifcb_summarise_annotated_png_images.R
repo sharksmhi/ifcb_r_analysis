@@ -1,6 +1,6 @@
 library(tidyverse)
 
-extraction_date <- "2024-03-26"
+extraction_date <- "2024-04-08"
 classifier <- "Skagerrak_Kattegat"
 
 pngdir <- file.path("//winfs-utv/data/utv/ifcb/work/data/png_images", classifier, extraction_date)
