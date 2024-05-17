@@ -6,7 +6,10 @@ shapefilesDir <- "data/shapefiles/sharkweb_shapefiles/"
 basin_shapefile <- "Havsomr_SVAR_2016_3b_CP1252.shp"
 basin_names <- "sea_basin_utf8.txt"
 
-source("code/ifcb_read_hdr_meta_data_v1.R")
+# source("code/ifcb_read_hdr_meta_data_v1.R")
+
+# Read data
+allaifcb_data_wide <- read_tsv("output/allifcb_data_wide_march_2023.txt")
 
 # Read shapefiles and list of basin names
 basins <- st_read(file.path(shapefilesDir, basin_shapefile))
@@ -29,12 +32,13 @@ all_basins <- st_transform(all_basins, 4326)
 
 # Add geometry information to data
 allaifcb_data_wide <- allaifcb_data_wide %>%
-  mutate(lon = gpsLongitude,
-         lat = gpsLatitude)
+  mutate(lon = as.numeric(gpsLongitude),
+         lat = as.numeric(gpsLatitude)) %>%
+  filter(!is.na(lat))
 
 # Gather all unique positions
 cords = allaifcb_data_wide %>%
-  distinct(gpsLongitude, gpsLatitude, lat, lon)
+  distinct(gpsLongitude, gpsLatitude, lat, lon) 
 
 # Convert data points to sf
 points_sf <- st_as_sf(cords, coords = c("lon", "lat"), crs = st_crs(all_basins))
@@ -63,7 +67,7 @@ allaifcb_data_wide_basin <- allaifcb_data_wide %>%
 
 # Save the data as a txt file
 write.table(allaifcb_data_wide_basin, 
-            "output/sample_classifier.txt",
+            "output/sample_classifier_2023.txt",
             sep = "\t",
             quote = FALSE, 
             na = "NA", 
