@@ -1,19 +1,20 @@
 # History files
-.Rproj.user
+.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
-*.DS_Store
 .Renviron
 
-# Session Data files
-.RData
-.shiny_run
+# macOS system files
+*.DS_Store
+
+# Shiny files
+.shiny_run/
 shinyShortcut.vbs
 
 # RStudio files
 .Rproj.user/
-rsconnect
+rsconnect/
 
 # Rendered reports
 code/*.docx
@@ -22,23 +23,24 @@ docs/*.html
 docs/*.docx
 docs/*.pdf
 
-# data files
+# Data files
 data/*.csv
 data/*.txt
 data/backup/
-data/baltic 2023/
+data/baltic\ 2023/
 data/march/
-data/baltic 2023 november/
-data/skagerrak 2023 november/
-data/origin unknown/
-data/skagerrak-kattegat 2023/
-data/summary Baltic/
-data/summary Skagerrak-Kattegat/
+data/baltic\ 2023\ november/
+data/skagerrak\ 2023\ november/
+data/origin\ unknown/
+data/skagerrak-kattegat\ 2023/
+data/summary\ Baltic/
+data/summary\ Skagerrak-Kattegat/
 data/summary_until_march_2023/
-data/tollboden/
 data/tollboden/
 data/shapefiles/sharkweb_shapefiles/*
 !data/shapefiles/sharkweb_shapefiles/.gitkeep
+
+# Output files
 output/*.csv
 output/*.txt
 output/classifier/*.txt
@@ -46,15 +48,8 @@ output/blobs_and_features/*.txt
 output/classifier/
 !output/classifier/.gitkeep
 !output/classifier/corrected/.gitkeep
-work/
-data/data/
-data/png_images/
-data/skagerrak 2023 january 2024/
-data/baltic 2023 january 2024/
-data/skagerrak 2023 april 2024/
-data/baltic 2023 april 2024/
 
-# output files
+# Images and other binary files
 *.jpg
 *.pdf
 *.png
@@ -62,19 +57,20 @@ data/baltic 2023 april 2024/
 
 # knitr and R markdown default cache directories
 /code/cache/
-/code/figures/*.jpg
+code/figures/*.jpg
 
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
 
-# RStudio
-.Rproj.user
-
 # Deprecated code
-old
+old/
 
-# python environment
-code/python/venv
-code/python/edit_manual_file/__pycache__
+# Python environment
+venv/
+__pycache__/
 .idea/
+
+# Workspace
+work/
+data/*
