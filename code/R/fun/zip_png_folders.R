@@ -2,9 +2,9 @@
 library(zip)
 
 # Define the function to zip folders containing .png files
-zip_png_folders <- function(main_dir, zip_filename) {
+zip_png_folders <- function(png_directory, zip_filename, readme_file = NULL) {
   # List all subdirectories in the main directory
-  subdirs <- list.dirs(main_dir, recursive = FALSE)
+  subdirs <- list.dirs(png_directory, recursive = FALSE)
   
   # Initialize a vector to store directories with .png files
   dirs_to_zip <- character()
@@ -54,10 +54,19 @@ zip_png_folders <- function(main_dir, zip_filename) {
   # Print a new line after the progress bar is complete
   cat("\n")
   
+  # If readme_file is provided, copy it
+  if (!is.null(readme_file)) {
+    file.copy(readme_file, file.path(temp_dir, "README.md"), overwrite = TRUE)
+  }
+  
   # If there are directories to zip
   if (length(temp_subdirs) > 0) {
     # Create the zip archive
-    zipr(zipfile = zip_filename, files = temp_subdirs)
+    files_to_zip <- temp_subdirs
+    if (!is.null(readme_file)) {
+      files_to_zip <- c(files_to_zip, file.path(temp_dir, "README.md"))
+    }
+    zipr(zipfile = zip_filename, files = files_to_zip)
     message("Zip archive created successfully.")
   } else {
     message("No directories with .png files found.")

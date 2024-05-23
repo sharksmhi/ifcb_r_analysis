@@ -64,6 +64,11 @@ code/figures/*.jpg
 *.utf8.md
 *.knit.md
 
+# Readme templates
+templates/README_baltic-template.md
+templates/README_skagerrak-kattegat-template.md
+templates/README_tångesund-template.md
+
 # Deprecated code
 old/
 
