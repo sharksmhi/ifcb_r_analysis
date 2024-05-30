@@ -5,6 +5,7 @@ source("code/R/fun/zip_manual_files.R")
 
 # Get base path for ifcb data
 ifcb_path <- Sys.getenv("ifcb_path")
+email_address <- Sys.getenv("email_address")
 # ifcb_path <- Sys.getenv("tangesund_path")
 
 # Define stable paths
@@ -43,5 +44,5 @@ readme_file <- "templates/README_skagerrak-kattegat-template.md"
 # readme_file <- "templates/README_tångesund-template.md"
 
 # Create zip archives
-zip_png_folders(png_directory, png_zip_file, readme_file)
-zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory)
+zip_png_folders(png_directory, png_zip_file, readme_file, email_address)
+zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory, email_address)

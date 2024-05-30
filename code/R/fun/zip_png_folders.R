@@ -5,7 +5,7 @@ library(dplyr)
 library(lubridate)
 
 # Define the function to zip folders containing .png files
-zip_png_folders <- function(png_directory, zip_filename, readme_file = NULL) {
+zip_png_folders <- function(png_directory, zip_filename, readme_file = NULL, email_address = NULL) {
   # List all subdirectories in the main directory
   subdirs <- list.dirs(png_directory, recursive = FALSE)
   
@@ -87,6 +87,7 @@ zip_png_folders <- function(png_directory, zip_filename, readme_file = NULL) {
     # Update the README.md template placeholders
     updated_readme <- readme_content %>%
       gsub("<DATE>", current_date, .) %>%
+      gsub("<E-MAIL>", email_address, .) %>%
       gsub("<IMAGE_ZIP>", basename(zip_filename), .) %>%
       gsub("<MATLAB_ZIP>", gsub("annotated_images", "matlab_files", basename(zip_filename)), .) %>%
       gsub("<N_IMAGES>", formatC(sum(files_df$n), format = "d", big.mark = ","), .) %>%
