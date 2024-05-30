@@ -2,7 +2,7 @@
 library(zip)
 
 # Define the function to create the zip archive
-zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip_filename, data_folder = NULL, readme_file = NULL) {
+zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip_filename, data_folder = NULL, readme_file = NULL, png_directory = NULL) {
   # Print message to indicate starting listing files
   message("Listing all files...")
   
@@ -138,11 +138,61 @@ zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip
   message("Copying class2use file...")
   file.copy(class2use_file, file.path(config_dir, "class2use.mat"), overwrite = TRUE)
   
-  # If readme_file is provided, copy it
-  if (!is.null(readme_file)) {
-    file.copy(readme_file, file.path(temp_dir, "README.md"), overwrite = TRUE)
+  # Function to truncate the folder name
+  truncate_folder_name <- function(folder_name) {
+    sub("_\\d{3}$", "", basename(folder_name))
   }
   
+  # If readme_file is provided, update it
+  if (!is.null(readme_file)) {
+    message("Creating README file...")
+    
+    # Read the template README.md content
+    readme_content <- readLines(readme_file, encoding = "UTF-8")
+    
+    # Get the current date
+    current_date <- Sys.Date()
+    
+    # Get list of filenames with .png extension
+    files <- list.files(png_directory, pattern = "png$", full.names = TRUE, recursive = TRUE)
+    
+    # Summarize the number of images by directory
+    files_df <- tibble(dir = dirname(files)) %>% 
+      count(dir) %>% 
+      mutate(taxa = truncate_folder_name(dir)) %>%  # Use basename to get the folder name
+      arrange(desc(n))
+    
+    # Extract dates from file paths and get the years
+    dates <- str_extract(files, "D\\d{8}")
+    years <- as.integer(substr(dates, 2, 5))
+    
+    # Find the minimum and maximum year
+    min_year <- min(years, na.rm = TRUE)
+    max_year <- max(years, na.rm = TRUE)
+    
+    # Update the README.md template placeholders
+    updated_readme <- readme_content %>%
+      gsub("<DATE>", current_date, .) %>%
+      gsub("<MATLAB_ZIP>", basename(zip_filename), .) %>%
+      gsub("<IMAGE_ZIP>", gsub("matlab_files", "annotated_images", basename(zip_filename)), .) %>%
+      gsub("<N_IMAGES>", formatC(sum(files_df$n), format = "d", big.mark = ","), .) %>%
+      gsub("<CLASSES>", nrow(files_df), .) %>%
+      gsub("<YEAR_START>", min_year, .) %>%
+      gsub("<YEAR_END>", max_year, .) %>%
+      gsub("<YEAR>", year(current_date), .)
+    
+    # Create the new section for the number of images
+    new_section <- c("### Number of images per class", "")
+    new_section <- c(new_section, paste0(files_df$taxa, ": ", formatC(files_df$n, format = "d", big.mark = ",")))
+    new_section <- c("", new_section)  # Add an empty line before the new section for separation
+    
+    # Append the new section to the readme content
+    updated_readme <- c(updated_readme, new_section)
+    
+    # Write the updated content back to the README.md file
+    writeLines(updated_readme, file.path(temp_dir, "README.md"), useBytes = TRUE)
+  }
+
   # Print message to indicate starting zip creation
   message("Creating zip archive...")
   

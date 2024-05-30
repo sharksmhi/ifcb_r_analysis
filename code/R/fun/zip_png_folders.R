@@ -1,5 +1,8 @@
 # Load the necessary package
 library(zip)
+library(stringr)
+library(dplyr)
+library(lubridate)
 
 # Define the function to zip folders containing .png files
 zip_png_folders <- function(png_directory, zip_filename, readme_file = NULL) {
@@ -54,9 +57,54 @@ zip_png_folders <- function(png_directory, zip_filename, readme_file = NULL) {
   # Print a new line after the progress bar is complete
   cat("\n")
   
-  # If readme_file is provided, copy it
+  # If readme_file is provided, update it
   if (!is.null(readme_file)) {
-    file.copy(readme_file, file.path(temp_dir, "README.md"), overwrite = TRUE)
+    message("Creating README file...")
+    
+    # Read the template README.md content
+    readme_content <- readLines(readme_file, encoding = "UTF-8")
+    
+    # Get the current date
+    current_date <- Sys.Date()
+    
+    # Get list of filenames with .png extension
+    files <- list.files(png_directory, pattern = "png$", full.names = TRUE, recursive = TRUE)
+    
+    # Summarize the number of images by directory
+    files_df <- tibble(dir = dirname(files)) %>% 
+      count(dir) %>% 
+      mutate(taxa = truncate_folder_name(dir)) %>%  # Use basename to get the folder name
+      arrange(desc(n))
+    
+    # Extract dates from file paths and get the years
+    dates <- str_extract(files, "D\\d{8}")
+    years <- as.integer(substr(dates, 2, 5))
+    
+    # Find the minimum and maximum year
+    min_year <- min(years, na.rm = TRUE)
+    max_year <- max(years, na.rm = TRUE)
+    
+    # Update the README.md template placeholders
+    updated_readme <- readme_content %>%
+      gsub("<DATE>", current_date, .) %>%
+      gsub("<IMAGE_ZIP>", basename(zip_filename), .) %>%
+      gsub("<MATLAB_ZIP>", gsub("annotated_images", "matlab_files", basename(zip_filename)), .) %>%
+      gsub("<N_IMAGES>", formatC(sum(files_df$n), format = "d", big.mark = ","), .) %>%
+      gsub("<CLASSES>", nrow(files_df), .) %>%
+      gsub("<YEAR_START>", min_year, .) %>%
+      gsub("<YEAR_END>", max_year, .) %>%
+      gsub("<YEAR>", year(current_date), .)
+    
+    # Create the new section for the number of images
+    new_section <- c("### Number of images per class", "")
+    new_section <- c(new_section, paste0(files_df$taxa, ": ", formatC(files_df$n, format = "d", big.mark = ",")))
+    new_section <- c("", new_section)  # Add an empty line before the new section for separation
+    
+    # Append the new section to the readme content
+    updated_readme <- c(updated_readme, new_section)
+    
+    # Write the updated content back to the README.md file
+    writeLines(updated_readme, file.path(temp_dir, "README.md"), useBytes = TRUE)
   }
   
   # If there are directories to zip
