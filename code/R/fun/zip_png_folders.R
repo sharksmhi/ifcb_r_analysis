@@ -117,13 +117,14 @@ zip_png_folders <- function(png_directory, zip_filename, readme_file = NULL, ema
     file_sizes <- file.info(files)$size
     
     # Create a data frame with filenames and their sizes
+    # Use fixed = TRUE in gsub to avoid interpreting backslashes as escape characters
     manifest_df <- data.frame(
-      file = gsub(paste0(folder_path, "/"), "", files),  # Remove the folder path from the file names
+      file = gsub(paste0(normalizePath(folder_path, winslash = "/"), "/"), "", normalizePath(files, winslash = "/"), fixed = TRUE),  # Remove the folder path from the file names
       size = file_sizes,
       stringsAsFactors = FALSE
     )
     
-    # Format the file information as "filename (size)"
+    # Format the file information as "filename [size]"
     manifest_content <- paste0(manifest_df$file, " [", formatC(manifest_df$size, format = "d", big.mark = ","), " bytes]")
     
     # Write the manifest content to MANIFEST.txt
