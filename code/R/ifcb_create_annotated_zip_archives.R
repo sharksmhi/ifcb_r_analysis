@@ -50,18 +50,10 @@ zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file
 
 ## Tångesund
 
-# Get base path for Tångesund data
-ifcb_path <- Sys.getenv("tangesund_path")
-
-# Define stable paths
-features_folder <- file.path(ifcb_path, "features") # Replace with the path to your features folder
-data_folder <- file.path(ifcb_path, "data")
-email_address <- Sys.getenv("email_address")
-
 # Define dynamic paths
-png_directory <- file.path(ifcb_path, "annotated_images")
-manual_folder <- file.path(ifcb_path, "manual/2016") # Replace with the path to your .mat files folder
-class2use_file <- file.path(ifcb_path, "config/class2use_Nov2022.mat")
+png_directory <- file.path(ifcb_path, "png_images/Tångesund/2017-06-27")
+manual_folder <- file.path(ifcb_path, "manual/Tångesund") # Replace with the path to your .mat files folder
+class2use_file <- file.path(ifcb_path, "config/class2use_tångesund_Nov2022.mat")
 
 # Define zip filenames
 manual_zip_file <- "output/figshare/smhi_ifcb_tångesund_matlab_files.zip" # Replace with your desired zip file name
