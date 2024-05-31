@@ -13,9 +13,11 @@ These are raw IFCB data files from manually classified samples
 #### .mat files
 
 ##### config/class2use.mat
+
 class2use: list of all manual classes used for manual image classification. The classes are sorted by manual classification id.
 
 ##### manual/*.mat
+
 class2use_auto: list of all classes from automatic image classification
 
 class2use_manual: list of all manual classes from config/class2use.mat. The classes are sorted by manual classification id.

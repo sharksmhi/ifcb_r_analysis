@@ -109,17 +109,35 @@ zip_png_folders <- function(png_directory, zip_filename, readme_file = NULL, ema
   }
   
   # Function to create MANIFEST.txt
-  create_package_manifest <- function(folder_path, manifest_path = "MANIFEST.txt") {
-    # List all files in the folder and subfolders
-    files <- list.files(folder_path, recursive = TRUE, full.names = TRUE)
+  create_package_manifest <- function(paths, manifest_path = "MANIFEST.txt", temp_dir) {
+    # Initialize a vector to store all files
+    all_files <- c()
+    
+    # Iterate over each path in the provided list
+    for (path in paths) {
+      if (dir.exists(path)) {
+        # If the path is a directory, list all files in the folder and subfolders
+        files <- list.files(path, recursive = TRUE, full.names = TRUE)
+      } else if (file.exists(path)) {
+        # If the path is a single file, add it to the list
+        files <- path
+      } else {
+        # If the path does not exist, skip it
+        next
+      }
+      # Append the files with their relative paths to the all_files vector
+      all_files <- c(all_files, files)
+    }
+    
+    # Remove any potential duplicates
+    all_files <- unique(all_files)
     
     # Get file sizes
-    file_sizes <- file.info(files)$size
+    file_sizes <- file.info(all_files)$size
     
     # Create a data frame with filenames and their sizes
-    # Use fixed = TRUE in gsub to avoid interpreting backslashes as escape characters
     manifest_df <- data.frame(
-      file = gsub(paste0(normalizePath(folder_path, winslash = "/"), "/"), "", normalizePath(files, winslash = "/"), fixed = TRUE),  # Remove the folder path from the file names
+      file = gsub(paste0(temp_dir, "/"), "", all_files, fixed = TRUE),
       size = file_sizes,
       stringsAsFactors = FALSE
     )
@@ -127,18 +145,12 @@ zip_png_folders <- function(png_directory, zip_filename, readme_file = NULL, ema
     # Format the file information as "filename [size]"
     manifest_content <- paste0(manifest_df$file, " [", formatC(manifest_df$size, format = "d", big.mark = ","), " bytes]")
     
+    # Exclude the manifest file itself if it's already present in the list
+    manifest_content <- manifest_content[manifest_df$file != basename(manifest_path)]
+    
     # Write the manifest content to MANIFEST.txt
     writeLines(manifest_content, manifest_path)
   }
-  
-  # Print message to indicate creating of MANIFEST.txt
-  message("Creating MANIFEST.txt...")
-  
-  # Create a manifest for the zip package
-  create_package_manifest(temp_dir, manifest_path = file.path(temp_dir, "MANIFEST.txt"))
-  
-  # Print message to indicate starting zip creation
-  message("Creating zip archive...")
   
   # If there are directories to zip
   if (length(temp_subdirs) > 0) {
@@ -147,6 +159,16 @@ zip_png_folders <- function(png_directory, zip_filename, readme_file = NULL, ema
     if (!is.null(readme_file)) {
       files_to_zip <- c(files_to_zip, file.path(temp_dir, "README.md"), file.path(temp_dir, "MANIFEST.txt"))
     }
+    
+    # Print message to indicate creating of MANIFEST.txt
+    message("Creating MANIFEST.txt...")
+    
+    # Create a manifest for the zip package
+    create_package_manifest(files_to_zip, manifest_path = file.path(temp_dir, "MANIFEST.txt"), temp_dir)
+    
+    # Print message to indicate starting zip creation
+    message("Creating zip archive...")
+    
     zipr(zipfile = zip_filename, files = files_to_zip)
     message("Zip archive created successfully.")
   } else {
