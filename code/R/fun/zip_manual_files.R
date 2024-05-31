@@ -193,14 +193,42 @@ zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip
     # Write the updated content back to the README.md file
     writeLines(updated_readme, file.path(temp_dir, "README.md"), useBytes = TRUE)
   }
-
+  
+  # Function to create MANIFEST.txt
+  create_manifest <- function(folder_path, manifest_path = "MANIFEST.txt") {
+    # List all files in the folder and subfolders
+    files <- list.files(folder_path, recursive = TRUE, full.names = TRUE)
+    
+    # Get file sizes
+    file_sizes <- file.info(files)$size
+    
+    # Create a data frame with filenames and their sizes
+    manifest_df <- data.frame(
+      file = gsub(paste0(folder_path, "/"), "", files),  # Remove the folder path from the file names
+      size = file_sizes,
+      stringsAsFactors = FALSE
+    )
+    
+    # Format the file information as "filename (size)"
+    manifest_content <- paste0(manifest_df$file, " [", formatC(manifest_df$size, format = "d", big.mark = ","), " bytes]")
+    
+    # Write the manifest content to MANIFEST.txt
+    writeLines(manifest_content, manifest_path)
+  }
+  
+  # Print message to indicate creating of MANIFEST.txt
+  message("Creating MANIFEST.txt...")
+  
+  # Create a manifest for the zip package
+  create_manifest(temp_dir, manifest_path = file.path(temp_dir, "MANIFEST.txt"))
+  
   # Print message to indicate starting zip creation
   message("Creating zip archive...")
   
   # Create the zip archive
   files_to_zip <- c(manual_dir, features_dir, config_dir)
   if (!is.null(data_files)) files_to_zip <- c(files_to_zip, data_dir)
-  if (!is.null(readme_file)) files_to_zip <- c(files_to_zip, file.path(temp_dir, "README.md"))
+  if (!is.null(readme_file)) files_to_zip <- c(files_to_zip, file.path(temp_dir, "README.md"), file.path(temp_dir, "MANIFEST.txt"))
   
   zipr(zipfile = zip_filename, files = files_to_zip)
   message("Zip archive created successfully.")

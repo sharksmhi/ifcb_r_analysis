@@ -67,6 +67,10 @@ code/figures/*.jpg
 # Deprecated code
 old/
 
+# Readme files
+README.md
+MANIFEST.txt
+
 # Python environment
 venv/
 __pycache__/
