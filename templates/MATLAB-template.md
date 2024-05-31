@@ -4,9 +4,9 @@
 
 These are raw IFCB data files from manually classified samples. The filenames indicate the date and time (in UTC) of sample collection, as well as the IFCB serial number used.
 
-- *.roi: raw image data stored as a binary stream
-- *.adc: analog-to-digital converter data from sensors for each event, and location pointers for each event's image data
-- *.hdr: instrument settings information similar to those contained in the configuration file, as well as a key to the format of the .adc file
+- data/YEAR/*.roi: raw image data stored as a binary stream
+- data/YEAR/*.adc: analog-to-digital converter data from sensors for each event, and location pointers for each event's image data
+- data/YEAR/*.hdr: instrument settings information similar to those contained in the configuration file, as well as a key to the format of the .adc file
 
 ### .mat files
 
