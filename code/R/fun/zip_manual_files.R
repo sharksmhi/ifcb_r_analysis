@@ -2,7 +2,7 @@
 library(zip)
 
 # Define the function to create the zip archive
-zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip_filename, data_folder = NULL, readme_file = NULL, png_directory = NULL, email_address = NULL, matlab_readme_file = NULL) {
+zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip_filename, data_folder = NULL, readme_file = NULL, png_directory = NULL, email_address = "", matlab_readme_file = NULL, version = "") {
   # Print message to indicate starting listing files
   message("Listing all files...")
   
@@ -174,6 +174,7 @@ zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip
     # Update the README.md template placeholders
     updated_readme <- readme_content %>%
       gsub("<DATE>", current_date, .) %>%
+      gsub("<VERSION>", version, .) %>%
       gsub("<E-MAIL>", email_address, .) %>%
       gsub("<MATLAB_ZIP>", basename(zip_filename), .) %>%
       gsub("<IMAGE_ZIP>", gsub("matlab_files", "annotated_images", basename(zip_filename)), .) %>%

@@ -1,10 +1,11 @@
 ## General information
 
-Author: Anders Torstensson, Ann-Turi Skjevik, Malin Mohlin, Maria Karlberg, Bengt Karlson
-Contact e-mail: <E-MAIL>
-DOI: 
-License: CC BY 4.0
-This readme file was last updated: 
+- Author: Anders Torstensson, Ann-Turi Skjevik, Malin Mohlin, Maria Karlberg, Bengt Karlson
+- Contact e-mail: <E-MAIL>
+- DOI: 
+- License: CC BY 4.0
+- Version: 
+- This readme file was last updated: 
 
 Please cite as: Torstensson, Anders; Skjevik, Ann-Turi; Mohlin, Malin; Karlberg, Maria; Karlson, Bengt (<YEAR>). SMHI IFCB plankton image reference library. SciLifeLab. Dataset. https://doi.org/10.17044/scilifelab.25883455
 

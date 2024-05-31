@@ -12,6 +12,7 @@ features_folder <- file.path(ifcb_path, "features") # Replace with the path to y
 data_folder <- file.path(ifcb_path, "data")
 email_address <- Sys.getenv("email_address")
 matlab_readme_file <- "templates/MATLAB-template.md"
+version = "1"
 
 ## Skagerrak-Kattegat
 
@@ -28,8 +29,8 @@ png_zip_file <- "output/figshare/smhi_ifcb_skagerrak_kattegat_annotated_images.z
 readme_file <- "templates/README_skagerrak-kattegat-template.md"
 
 # Create zip archives
-zip_png_folders(png_directory, png_zip_file, readme_file, email_address)
-zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory, email_address, matlab_readme_file)
+zip_png_folders(png_directory, png_zip_file, readme_file, email_address, version)
+zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory, email_address, matlab_readme_file, version)
 
 ## Baltic
 
@@ -45,8 +46,8 @@ png_zip_file <- "output/figshare/smhi_ifcb_baltic_annotated_images.zip"
 # Define README file
 readme_file <- "templates/README_baltic-template.md"
 
-zip_png_folders(png_directory, png_zip_file, readme_file, email_address)
-zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory, email_address, matlab_readme_file)
+zip_png_folders(png_directory, png_zip_file, readme_file, email_address, version)
+zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory, email_address, matlab_readme_file, version)
 
 ## Tångesund
 
@@ -62,8 +63,8 @@ png_zip_file <- "output/figshare/smhi_ifcb_tångesund_annotated_images.zip"
 # Define README file
 readme_file <- "templates/README_tångesund-template.md"
 
-zip_png_folders(png_directory, png_zip_file, readme_file, email_address)
-zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory, email_address, matlab_readme_file)
+zip_png_folders(png_directory, png_zip_file, readme_file, email_address, version)
+zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory, email_address, matlab_readme_file, version)
 
 ### Place updated README.md in output/figshare before creating the final manifest
 create_manifest("output/figshare", "output/figshare/MANIFEST.txt")
