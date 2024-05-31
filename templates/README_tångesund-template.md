@@ -11,7 +11,7 @@ Please cite as: Torstensson, Anders; Skjevik, Ann-Turi; Mohlin, Malin; Karlberg,
 
 ## Dataset description
 
-This dataset includes manually annotated plankton images by phytoplankton experts at the Swedish Meteorological and Hydrological Institute (SMHI). These images can be used for training classifiers to identify various plankton species. The images were captured using an Imaging FlowCytobot (IFCB, McLane Research Laboratories). In 2016, an IFCB was deployed in situ at depths between 3 and 18 meters, near a mussel farm in Tångesund, Mollösund. This dataset contains <N_IMAGES> annotated images from <CLASSES> different classes.
+This dataset includes manually annotated plankton images by phytoplankton experts at the Swedish Meteorological and Hydrological Institute (SMHI). These images can be used for training classifiers to identify various plankton species. The images were captured using an Imaging FlowCytobot (IFCB, McLane Research Laboratories). In 2016, an IFCB was deployed in situ at depths between 3 and 18 meters, near a mussel farm in Tångesund, Mollösund (Skagerrak). This dataset contains <N_IMAGES> annotated images from <CLASSES> different classes.
 
 ## Available data
 
