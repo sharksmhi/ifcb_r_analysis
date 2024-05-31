@@ -5,7 +5,9 @@
 These are raw IFCB data files from manually classified samples
 
 *.roi: raw image data stored as a binary stream
+
 *.adc: analog-to-digital converter data from sensors for each event, and location pointers for each event's image data
+
 *.hdr: instrument settings information similar to those contained in the configuration file, as well as a key to the format of the .adc file
 
 ## .mat files
@@ -15,9 +17,13 @@ class2use: list of all manual classes used for manual image classification. The 
 
 # manual/*.mat
 class2use_auto: list of all classes from automatic image classification
+
 class2use_manual: list of all manual classes from config/class2use.mat. The classes are sorted by manual classification id.
+
 classlist: matrix containing information on roi number, manual classification id and automatic classification (see list_titles)
+
 default_class_original: default manual class
+
 list_titles: titles of classlist
 
 ## v2 Feature File Content Description
