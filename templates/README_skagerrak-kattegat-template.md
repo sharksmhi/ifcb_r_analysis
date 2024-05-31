@@ -17,4 +17,4 @@ This dataset includes manually annotated plankton images by phytoplankton expert
 There are two zip-packages available from this dataset:
 
 - <IMAGE_ZIP> - contains .png images that are manually annotated and organized into subfolders for each class
-- <MATLAB_ZIP> - includes raw data files (.roi, .hdr, .adc) and MATLAB files for creating an image classifier using the code available at https://github.com/hsosik/ifcb-analysis
+- <MATLAB_ZIP> - includes raw data files (.roi, .hdr, .adc) and MATLAB files for creating a random forest image classifier using the code available at https://github.com/hsosik/ifcb-analysis
