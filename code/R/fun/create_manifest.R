@@ -11,8 +11,10 @@ create_manifest <- function(folder_path, manifest_path = "MANIFEST.txt", exclude
   
   # Optionally exclude the existing MANIFEST.txt
   if (exclude_manifest) {
-    manifest_file_path <- normalizePath(file.path(folder_path, "MANIFEST.txt"), winslash = "/")
-    files <- files[files != manifest_file_path]
+    if(exists(manifest_path)) {
+      manifest_file_path <- normalizePath(file.path(folder_path, "MANIFEST.txt"), winslash = "/")
+      files <- files[files != manifest_file_path]
+    }
   }
   
   # Get file sizes
