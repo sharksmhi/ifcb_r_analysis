@@ -1,6 +1,6 @@
 ### MATLAB file description
 
-## Raw data files
+#### Raw data files
 
 These are raw IFCB data files from manually classified samples
 
@@ -10,12 +10,12 @@ These are raw IFCB data files from manually classified samples
 
 *.hdr: instrument settings information similar to those contained in the configuration file, as well as a key to the format of the .adc file
 
-## .mat files
+#### .mat files
 
-# config/class2use.mat
+##### config/class2use.mat
 class2use: list of all manual classes used for manual image classification. The classes are sorted by manual classification id.
 
-# manual/*.mat
+##### manual/*.mat
 class2use_auto: list of all classes from automatic image classification
 
 class2use_manual: list of all manual classes from config/class2use.mat. The classes are sorted by manual classification id.
@@ -26,7 +26,7 @@ default_class_original: default manual class
 
 list_titles: titles of classlist
 
-## v2 Feature File Content Description
+#### v2 Feature File Content Description
 
 Feature are descibed as in https://github.com/hsosik/ifcb-analysis/wiki/Feature-File-Documentation
 
