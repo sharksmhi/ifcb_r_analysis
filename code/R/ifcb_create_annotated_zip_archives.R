@@ -35,7 +35,7 @@ zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file
 ## Baltic
 
 # Define dynamic paths
-png_directory <- file.path(ifcb_path, "png_images/Baltic/2024-05-28")
+png_directory <- file.path(ifcb_path, "png_images/Baltic/2024-05-31")
 manual_folder <- file.path(ifcb_path, "manual/Baltic") # Replace with the path to your .mat files folder
 class2use_file <- file.path(ifcb_path, "config/class2use_Baltic_inc_underscore.mat")
 
