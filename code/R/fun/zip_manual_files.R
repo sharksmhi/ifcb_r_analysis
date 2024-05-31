@@ -195,7 +195,7 @@ zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip
   }
   
   # Function to create MANIFEST.txt
-  create_manifest <- function(folder_path, manifest_path = "MANIFEST.txt") {
+  create_package_manifest <- function(folder_path, manifest_path = "MANIFEST.txt") {
     # List all files in the folder and subfolders
     files <- list.files(folder_path, recursive = TRUE, full.names = TRUE)
     
@@ -221,7 +221,7 @@ zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip
   message("Creating MANIFEST.txt...")
   
   # Create a manifest for the zip package
-  create_manifest(temp_dir, manifest_path = file.path(temp_dir, "MANIFEST.txt"))
+  create_package_manifest(temp_dir, manifest_path = file.path(temp_dir, "MANIFEST.txt"))
   
   # Print message to indicate starting zip creation
   message("Creating zip archive...")

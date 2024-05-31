@@ -43,7 +43,7 @@ data/shapefiles/sharkweb_shapefiles/*
 # Output files
 output/*.csv
 output/*.txt
-output/*.zip
+*.zip
 output/classifier/*.txt
 output/blobs_and_features/*.txt
 output/classifier/
