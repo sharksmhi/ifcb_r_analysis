@@ -1,4 +1,4 @@
-### General information
+## General information
 
 Author: Anders Torstensson, Ann-Turi Skjevik, Malin Mohlin, Maria Karlberg, Bengt Karlson
 Contact e-mail: <E-MAIL>
@@ -8,11 +8,11 @@ This readme file was last updated: <DATE>
 
 Please cite as: Torstensson, Anders; Skjevik, Ann-Turi; Mohlin, Malin; Karlberg, Maria; Karlson, Bengt (<YEAR>). SMHI IFCB plankton image reference library. SciLifeLab. Dataset. https://doi.org/10.17044/scilifelab.25883455
 
-### Dataset description
+## Dataset description
 
 This dataset includes manually annotated plankton images by phytoplankton experts at the Swedish Meteorological and Hydrological Institute (SMHI). These images can be used for training classifiers to identify various plankton species. The images were captured using an Imaging FlowCytobot (IFCB, McLane Research Laboratories). In 2016, an IFCB was deployed in situ at depths between 3 and 18 meters, near a mussel farm in Tångesund, Mollösund. This dataset contains <N_IMAGES> annotated images from <CLASSES> different classes.
 
-### Available data
+## Available data
 
 There are two zip-packages available from this dataset:
 
