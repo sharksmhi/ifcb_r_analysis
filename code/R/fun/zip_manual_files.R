@@ -2,7 +2,7 @@
 library(zip)
 
 # Define the function to create the zip archive
-zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip_filename, data_folder = NULL, readme_file = NULL, png_directory = NULL, email_address = NULL) {
+zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip_filename, data_folder = NULL, readme_file = NULL, png_directory = NULL, email_address = NULL, matlab_readme_file = NULL) {
   # Print message to indicate starting listing files
   message("Listing all files...")
   
@@ -149,6 +149,7 @@ zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip
     
     # Read the template README.md content
     readme_content <- readLines(readme_file, encoding = "UTF-8")
+    matlab_content <- readLines(matlab_readme_file, encoding = "UTF-8")
     
     # Get the current date
     current_date <- Sys.Date()
@@ -185,7 +186,7 @@ zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip
     # Create the new section for the number of images
     new_section <- c("### Number of images per class", "")
     new_section <- c(new_section, paste0(files_df$taxa, ": ", formatC(files_df$n, format = "d", big.mark = ",")))
-    new_section <- c("", new_section)  # Add an empty line before the new section for separation
+    new_section <- c("", new_section, "", matlab_content)  # Add an empty line before the new section for separation
     
     # Append the new section to the readme content
     updated_readme <- c(updated_readme, new_section)

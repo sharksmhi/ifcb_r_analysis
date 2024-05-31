@@ -11,6 +11,7 @@ ifcb_path <- Sys.getenv("ifcb_path")
 features_folder <- file.path(ifcb_path, "features") # Replace with the path to your features folder
 data_folder <- file.path(ifcb_path, "data")
 email_address <- Sys.getenv("email_address")
+matlab_readme_file <- "templates/MATLAB-template.md"
 
 ## Skagerrak-Kattegat
 
@@ -28,7 +29,7 @@ readme_file <- "templates/README_skagerrak-kattegat-template.md"
 
 # Create zip archives
 zip_png_folders(png_directory, png_zip_file, readme_file, email_address)
-zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory, email_address)
+zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory, email_address, matlab_readme_file)
 
 ## Baltic
 
@@ -45,7 +46,7 @@ png_zip_file <- "output/figshare/smhi_ifcb_baltic_annotated_images.zip"
 readme_file <- "templates/README_baltic-template.md"
 
 zip_png_folders(png_directory, png_zip_file, readme_file, email_address)
-zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory, email_address)
+zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory, email_address, matlab_readme_file)
 
 ## Tångesund
 
@@ -70,7 +71,7 @@ png_zip_file <- "output/figshare/smhi_ifcb_tångesund_annotated_images.zip"
 readme_file <- "templates/README_tångesund-template.md"
 
 zip_png_folders(png_directory, png_zip_file, readme_file, email_address)
-zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory, email_address)
+zip_manual_files(manual_folder, features_folder, class2use_file, manual_zip_file, data_folder, readme_file, png_directory, email_address, matlab_readme_file)
 
 ### Place updated README.md in output/figshare before creating the final manifest
 create_manifest("output/figshare", "output/figshare/MANIFEST.txt")
