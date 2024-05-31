@@ -98,7 +98,7 @@ zip_png_folders <- function(png_directory, zip_filename, readme_file = NULL, ema
     
     # Create the new section for the number of images
     new_section <- c("### Number of images per class", "")
-    new_section <- c(new_section, paste0(files_df$taxa, ": ", formatC(files_df$n, format = "d", big.mark = ",")))
+    new_section <- c(new_section, paste0("- ", files_df$taxa, ": ", formatC(files_df$n, format = "d", big.mark = ",")))
     new_section <- c("", new_section)  # Add an empty line before the new section for separation
     
     # Append the new section to the readme content

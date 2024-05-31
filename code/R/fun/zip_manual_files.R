@@ -185,7 +185,7 @@ zip_manual_files <- function(manual_folder, features_folder, class2use_file, zip
     
     # Create the new section for the number of images
     new_section <- c("## Number of images per class", "")
-    new_section <- c(new_section, paste0(files_df$taxa, ": ", formatC(files_df$n, format = "d", big.mark = ",")))
+    new_section <- c(new_section, paste0("- ", files_df$taxa, ": ", formatC(files_df$n, format = "d", big.mark = ",")))
     new_section <- c("", new_section, "", matlab_content)  # Add an empty line before the new section for separation
     
     # Append the new section to the readme content
