@@ -12,7 +12,7 @@ features_folder <- file.path(ifcb_path, "features") # Replace with the path to y
 data_folder <- file.path(ifcb_path, "data")
 email_address <- Sys.getenv("email_address")
 matlab_readme_file <- "templates/MATLAB-template.md"
-version = "1"
+version = "2"
 
 ## Skagerrak-Kattegat
 
