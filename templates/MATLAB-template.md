@@ -51,9 +51,11 @@ These are raw IFCB data files from manually classified samples. The filenames in
 
 ### v2 Feature File Content Description (features/*.csv)
 
-Features are described as in https://github.com/hsosik/ifcb-analysis/wiki/Feature-File-Documentation
+Features were extracted using the code in https://github.com/hsosik/ifcb-analysis, and the feature-file headers are described below.
 
 #### Fea v2 label: Description (Units)
+
+Features are described as in https://github.com/hsosik/ifcb-analysis/wiki/Feature-File-Documentation
 
 - roi_number: Region of interest (ROI) number (NA)
 - Area: Cross-sectional area of largest blob in ROI (squared pixels)
