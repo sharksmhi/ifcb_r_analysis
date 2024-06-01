@@ -5,14 +5,41 @@
 These are raw IFCB data files from manually classified samples. The filenames indicate the date and time (in UTC) of sample collection, as well as the IFCB serial number used.
 
 - data/YEAR/*.roi: raw image data stored as a binary stream
-- data/YEAR/*.adc: analog-to-digital converter data from sensors for each event, and location pointers for each event's image data
-- data/YEAR/*.hdr: instrument settings information similar to those contained in the configuration file, as well as a key to the format of the .adc file
+- data/YEAR/*.adc: analog-to-digital converter data from sensors for each event, and location pointers for each event's image data. See listed headers description below, and in the .hdr file
+- data/YEAR/*.hdr: instrument settings information similar to those contained in the configuration file, as well as a key to the format of the .adc file. GPS position is also provided in the .hdr file
+
+#### Analog-to-digital converter data file headers (*.adc)
+
+1. trigger#: Trigger number of the acquired data in sequence.
+2. ADC_time: Elapsed time (in seconds) from the start of the sample run to the current trigger
+3. PMTA: Integrated output (in volts) of PMTA for the current trigger pulse
+4. PMTB: Integrated output (in volts) of PMTB for the current trigger pulse
+5. PMTC: Integrated output (in volts) of PMTC for the current trigger pulse
+6. PMTD: Integrated output (in volts) of PMTD for the current trigger pulse
+7. peakA: Peak output (in volts) of PMTA for the current trigger pulse
+8. peakB: Peak output (in volts) of PMTB for the current trigger pulse
+9. peakC: Peak output (in volts) of PMTC for the current trigger pulse
+10. peakD: Peak output (in volts) of PMTD for the current trigger pulse
+11. time of flight: Duration (in us) of the entire pulse for which a trigger signal is generated. (Note that this includes pulse stretching as set by user in the expert tab)
+12. grabtimestart: Elapsed time (in seconds) from the start of the sample run to the current trigger. (Note that this is redundant with ADC_time)
+13. grabtimeend: Elapsed time (in seconds) from the start of the sample run to the completion of image acquisition for the current trigger
+14. ROIx: 'x' position (in pixels) of the upper left corner of the bounding box for the current image
+15. ROIy: 'y' position (in pixels) of the upper left corner of the bounding box for the current image
+16. ROIwidth: Width (in pixels) of the bounding box for the current image
+17. ROIheight: Height (in pixels) of the bounding box for the current image
+18. start_byte: Integer value for the offset in the ROI array for the current image
+19. comparator_out: Placeholder for old revision hardware, reports '999' as default
+20. STartPoint: Placeholder for old revision hardware, reports '0' as default
+21. SignalLength: Placeholder for old revision hardware, reports '0' as default
+22. status: Status flag for the state of the ROI array
+23. runtime: Accumulated time (in seconds) for which sample has been analyzed
+24. inhibitTime: Accumulated time (in seconds) for which sample has not been analyzed (i.e., time during which sample was flowing but the system was busy and not looking for triggers)
 
 ### .mat files
 
 #### config/class2use.mat
 
-- class2use: list of all manual classes used for manual image classification. The classes are sorted by manual classification id.
+- class2use: list of all classes used for manual image classification. The classes are sorted by manual classification id.
 
 #### manual/*.mat
 
