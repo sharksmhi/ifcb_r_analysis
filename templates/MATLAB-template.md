@@ -4,9 +4,9 @@
 
 These are raw IFCB data files from manually classified samples. The filenames indicate the date and time (in UTC) of sample collection, as well as the IFCB serial number used.
 
-- data/YEAR/*.roi: raw image data stored as a binary stream
-- data/YEAR/*.adc: analog-to-digital converter data from sensors for each event, and location pointers for each event's image data. See listed headers description below, and in the .hdr file
-- data/YEAR/*.hdr: instrument settings information similar to those contained in the configuration file, as well as a key to the format of the .adc file. GPS position is also provided in the .hdr file
+- data/YEAR/DATE/*.roi: raw image data stored as a binary stream
+- data/YEAR/DATE/*.adc: analog-to-digital converter data from sensors for each event, and location pointers for each event's image data. See listed headers description below, and in the .hdr file
+- data/YEAR/DATE/*.hdr: instrument settings information similar to those contained in the configuration file, as well as a key to the format of the .adc file. GPS position is also provided in the .hdr file
 
 #### Analog-to-digital converter data file headers (*.adc)
 
@@ -55,7 +55,7 @@ These files contain the following information:
 - default_class_original: default manual class
 - list_titles: titles of classlist
 
-#### v2 Feature File Content Description (features/*.csv)
+#### v2 Feature File Content Description (features/YEAR/*.csv)
 
 Features were extracted using the code in https://github.com/hsosik/ifcb-analysis, and the feature-file headers are described below (Fea v2 label: Description (Units)):
 
