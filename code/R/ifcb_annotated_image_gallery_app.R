@@ -12,7 +12,6 @@ ui <- fluidPage(
       actionButton("go", "Go"),
       downloadButton("download", "List of selected images"),
       fileInput("upload", "Upload text file and apply image filter"),
-      actionButton("browse", "Browse...")
     ),
     mainPanel(
       fluidRow(
