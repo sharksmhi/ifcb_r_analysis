@@ -47,6 +47,7 @@ output/*.txt
 output/classifier/*.txt
 output/blobs_and_features/*.txt
 output/classifier/
+output/tångesund_from_png/
 !output/classifier/.gitkeep
 !output/classifier/corrected/.gitkeep
 
