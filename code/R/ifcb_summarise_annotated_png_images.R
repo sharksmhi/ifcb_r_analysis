@@ -1,7 +1,7 @@
 library(tidyverse)
 
-extraction_date <- "2024-04-08"
-classifier <- "Skagerrak_Kattegat"
+extraction_date <- "2024-06-11"
+classifier <- "Baltic"
 
 # Define paths
 ifcb_path <- Sys.getenv("ifcb_path")
@@ -44,7 +44,7 @@ for(i in 1:length(unique(files_df$classifier))) {
   
   ggsave(plot = plot_ix,
          path = plotdir,
-         filename = paste0(unique(files_df_ix$classifier), "_n_images.png"),
+         filename = paste0(unique(files_df_ix$classifier), "_", extraction_date, "_n_images.png"),
          device = "png",
          units = "cm",
          width = 14,
@@ -53,7 +53,7 @@ for(i in 1:length(unique(files_df$classifier))) {
 
 # Save data as a txt file
 write.table(files_df, 
-            paste0(outputdir, "n_images.txt"),
+            paste0(outputdir, classifier, "_n_images_", extraction_date, ".txt"),
             sep = "\t",
             quote = FALSE, 
             na = "NA", 
@@ -61,7 +61,7 @@ write.table(files_df,
 
 # Save data as a txt file
 write.table(sample_summary, 
-            paste0(outputdir, classifier, "_", "n_images_per_sample", "_", extraction_date, ".txt"),
+            paste0(outputdir, classifier, "_n_images_per_sample", "_", extraction_date, ".txt"),
             sep = "\t",
             quote = FALSE, 
             na = "NA", 
